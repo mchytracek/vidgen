@@ -28,6 +28,11 @@ step() { printf "\n\033[1m▶ %s\033[0m\n" "$*"; }
 step "Videoordner anlegen"
 python3 tools/init_video.py "${args[@]}"
 
+if [[ $install == 1 && -d video/remotion ]]; then
+  step "Remotion-Abhängigkeiten (video/remotion)"
+  (cd video/remotion && npm install --no-audit --no-fund --loglevel=error)
+fi
+
 if git rev-parse --git-dir >/dev/null 2>&1; then
   if [[ $keep_origin == 0 ]] && git remote get-url origin >/dev/null 2>&1 \
      && ! git remote get-url template >/dev/null 2>&1; then
@@ -41,11 +46,6 @@ if git rev-parse --git-dir >/dev/null 2>&1; then
     git add video
     git commit -q -m "Video initialisiert: $title" && echo "  ✔ commit: Video initialisiert: $title"
   fi
-fi
-
-if [[ $install == 1 && -d video/remotion ]]; then
-  step "Remotion-Abhängigkeiten (video/remotion)"
-  (cd video/remotion && npm install --no-audit --no-fund --loglevel=error)
 fi
 
 step "Umgebung prüfen"
