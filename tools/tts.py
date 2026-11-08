@@ -272,9 +272,43 @@ def _similar(a: str, b: str) -> bool:
     return difflib.SequenceMatcher(None, a, b).ratio() >= need
 
 
+_ONES = ["null", "eins", "zwei", "drei", "vier", "fünf", "sechs", "sieben", "acht", "neun", "zehn",
+         "elf", "zwölf", "dreizehn", "vierzehn", "fünfzehn", "sechzehn", "siebzehn", "achtzehn", "neunzehn"]
+_TENS = ["", "", "zwanzig", "dreißig", "vierzig", "fünfzig", "sechzig", "siebzig", "achtzig", "neunzig"]
+
+
+def zahl_de(n: int) -> str:
+    """Ganzzahl → deutsches Zahlwort (bis 999 999 999), z. B. 37 → „siebenunddreißig“."""
+    if n < 20:
+        return _ONES[n]
+    if n < 100:
+        one = "ein" if n % 10 == 1 else _ONES[n % 10]
+        return (one + "und" if n % 10 else "") + _TENS[n // 10]
+    if n < 1000:
+        rest = n % 100
+        return ("ein" if n // 100 == 1 else _ONES[n // 100]) + "hundert" + (zahl_de(rest) if rest else "")
+    if n < 1_000_000:
+        rest = n % 1000
+        head = "ein" if n // 1000 == 1 else zahl_de(n // 1000)
+        return head + "tausend" + (zahl_de(rest) if rest else "")
+    if n < 1_000_000_000:
+        mio, rest = divmod(n, 1_000_000)
+        head = "eine million" if mio == 1 else zahl_de(mio) + " millionen"
+        return head + (" " + zahl_de(rest) if rest else "")
+    return str(n)
+
+
+def _spell_numbers(words: list[str]) -> list[str]:
+    """Whisper schreibt Zahlen als Ziffern („37“) – für den Vergleich mit dem Skript ausschreiben."""
+    out: list[str] = []
+    for w in words:
+        out.extend(zahl_de(int(w)).split() if w.isdigit() and len(w) <= 9 else [w])
+    return out
+
+
 def check_transcript(expected: str, heard: str) -> tuple[bool, list[str]]:
     """Jedes Wort (≥ 2 Zeichen) des Skripts muss in Reihenfolge vorkommen; keine Wiederholung, nichts Überzähliges."""
-    exp, got = _words(expected), _words(heard)
+    exp, got = _spell_numbers(_words(expected)), _spell_numbers(_words(heard))
     acronyms = {a.lower() for a in re.findall(r"\b[A-ZÄÖÜ]{2,}\b", expected)}  # DNS, IP: exakt prüfen
     missing, cur = [], 0
     for w in exp:

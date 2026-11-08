@@ -47,7 +47,7 @@ Eingabebild muss vorher per `upload_file` in ComfyUIs `input/` liegen.
 | `267.noise_seed` | Seed | – |
 | `75.filename_prefix` | Ausgabename | `video/LTX_2.3_t2v` |
 
-## `audio-chatterbox_tts_multilingual.json` – Text → Sprache ⚠️ Custom Node fehlt
+## `audio-chatterbox_tts_multilingual.json` – Text → Sprache ✅ lauffähig
 
 Benötigt den Custom Node `FL_ChatterboxMultilingualTTS` (Paket *ComfyUI_Fill-ChatterBox*).
 Installation: MCP `install_node` (fragt nach) oder ComfyUI-Manager; Modelle lädt der
@@ -61,9 +61,9 @@ Node beim ersten Lauf selbst. Danach Slots prüfen – erwartet:
 | `1.seed` | Seed (für reproduzierbare Takes fixieren) |
 | `3.filename_prefix` | Ausgabename |
 
-## `audio_ace_step1_5_xl_turbo.json` – Musik ⚠️ Modelle fehlen
+## `audio_ace_step1_5_xl_turbo.json` – Musik ✅ lauffähig
 
-Benötigt `acestep_v1.5_xl_turbo_bf16.safetensors`, `ace_1.5_vae.safetensors`,
+Modelle installiert (geprüft 2026-11-08, Größen = Hugging Face). Benötigt `acestep_v1.5_xl_turbo_bf16.safetensors`, `ace_1.5_vae.safetensors`,
 `qwen_0.6b_ace15.safetensors`, `qwen_4b_ace15.safetensors`
 (Hugging Face: `Comfy-Org/ace_step_1.5_ComfyUI_files`, Download per MCP `download_model`).
 
