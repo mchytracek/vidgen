@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Vertont die Sprechtexte eines Storyboards und misst das Timing.
 
-  python3 tools/tts.py projects/<slug>                      # Backend aus storyboard.voice
-  python3 tools/tts.py projects/<slug> --backend say        # Entwurf mit macOS-Stimme
-  python3 tools/tts.py projects/<slug> --only s02 --force
+  python3 tools/tts.py   # Backend aus storyboard.voice
+  python3 tools/tts.py --backend say        # Entwurf mit macOS-Stimme
+  python3 tools/tts.py --only s02 --force
 
 Backends:
   comfyui-chatterbox  ChatterBox Multilingual in ComfyUI (Custom Node nötig, Referenzstimme)
@@ -68,7 +68,7 @@ def tts_chatterbox(pdir: Path, sb: dict, s: dict, ref_name: str, dst_stem: Path)
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("project")
+    ap.add_argument("--dir", dest="project", help="Videoordner (Default: video/)")
     ap.add_argument("--backend", choices=["comfyui-chatterbox", "say"])
     ap.add_argument("--only")
     ap.add_argument("--force", action="store_true")
@@ -104,7 +104,7 @@ def main():
         s.setdefault("assets", {})["audio"] = f"audio/{out.name}"
         save_sb(pdir, sb)
 
-    subprocess.run(["python3", str(Path(__file__).with_name("storyboard.py")), "timing", str(pdir)], check=False)
+    subprocess.run(["python3", str(Path(__file__).with_name("storyboard.py")), "timing", "--dir", str(pdir)], check=False)
 
 
 if __name__ == "__main__":

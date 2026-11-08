@@ -4,10 +4,10 @@
 Nutzt dieselbe Engine wie der MCP-Server comfy-mcp (comfy-cli). Die Vorlagen in
 comfy/workflows/ bleiben unverändert; pro Job entsteht eine Arbeitskopie in .work/.
 
-  python3 tools/comfy_assets.py projects/<slug>                  # alles Fehlende
-  python3 tools/comfy_assets.py projects/<slug> --only s03,s05 --force
-  python3 tools/comfy_assets.py projects/<slug> --kind image     # image | clip | music
-  python3 tools/comfy_assets.py projects/<slug> --dry-run
+  python3 tools/comfy_assets.py   # alles Fehlende
+  python3 tools/comfy_assets.py --only s03,s05 --force
+  python3 tools/comfy_assets.py --kind image     # image | clip | music
+  python3 tools/comfy_assets.py --dry-run
 """
 from __future__ import annotations
 
@@ -70,7 +70,7 @@ def store(src: Path, pdir: Path, sub: str, sid: str) -> str:
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("project")
+    ap.add_argument("--dir", dest="project", help="Videoordner (Default: video/)")
     ap.add_argument("--only", help="Szenen-IDs, kommagetrennt")
     ap.add_argument("--kind", choices=["image", "clip", "music"], help="nur diese Asset-Art")
     ap.add_argument("--force", action="store_true", help="vorhandene Assets neu erzeugen")

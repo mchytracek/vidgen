@@ -6,10 +6,10 @@ description: Vertont die Sprechtexte eines Storyboards lokal (ChatterBox Multili
 # Voiceover
 
 ```bash
-python3 tools/tts.py projects/<slug>                    # alle Szenen ohne Audio
-python3 tools/tts.py projects/<slug> --only s02 --force # eine Szene neu
-python3 tools/tts.py projects/<slug> --backend say      # schneller Entwurf ohne ComfyUI
-python3 tools/storyboard.py timing projects/<slug>      # Dauern messen & eintragen
+python3 tools/tts.py                       # alle Szenen ohne Audio
+python3 tools/tts.py --only s02 --force    # eine Szene neu
+python3 tools/tts.py --backend say         # schneller Entwurf ohne ComfyUI
+python3 tools/storyboard.py timing         # Dauern messen & eintragen
 ```
 
 ## Backends (`storyboard.voice.backend`)

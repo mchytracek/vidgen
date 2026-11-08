@@ -7,16 +7,23 @@ description: Orchestriert die komplette Produktion eines Erklärvideos – vom B
 
 Du führst ein Video durch acht Phasen. Jede Phase hat einen eigenen Skill mit
 den Details – lies ihn, bevor du die Phase beginnst. Der Zustand liegt immer in
-`projects/<slug>/storyboard.json` (Feld `status`), damit eine Produktion jederzeit
+`video/storyboard.json` (Feld `status`), damit eine Produktion jederzeit
 fortgesetzt werden kann.
 
-## 0. Projekt finden oder anlegen
+## 0. Stand feststellen
 
-- `python3 tools/storyboard.py list` zeigt vorhandene Projekte und ihren Status.
-- Fortsetzen: Storyboard lesen, beim ersten nicht erledigten Schritt weitermachen.
-- Neu: `python3 tools/new_project.py <slug> --title "<Titel>" [--compositor remotion|hyperframes|tesseract] [--format 16:9|9:16|1:1]`
-  legt `projects/<slug>/` aus `templates/project/` an.
-- Vorher kurz `server_info` (comfy-mcp) aufrufen. Läuft ComfyUI nicht → `vidgen-setup`.
+Dieses Repo ist **ein Video** (Klon des vidgen-Templates). Alles Videospezifische
+liegt in `video/`.
+
+- `video/` fehlt → Repo ist noch nicht initialisiert. Titel (und ggf. Format,
+  Compositor, Länge) erfragen bzw. aus der Anfrage ableiten, dann
+  `scripts/init.sh "<Titel>" [--format 16:9|9:16|1:1] [--compositor remotion|hyperframes|tesseract] [--duration 60]`.
+  Das legt `video/` an, benennt `origin` in `template` um, committet und installiert Remotion.
+- `video/` existiert → `python3 tools/storyboard.py show` zeigt Status und Szenen;
+  beim ersten nicht erledigten Schritt weitermachen.
+- Kurz `server_info` (comfy-mcp) aufrufen. Läuft ComfyUI nicht → `vidgen-setup`.
+- Nach jeder abgeschlossenen Phase committen (`git add video && git commit -m "<Phase>: …"`),
+  damit der Verlauf des Videos nachvollziehbar bleibt. Generierte Medien sind git-ignoriert.
 
 ## 1. Briefing → `brief.md`
 
@@ -37,12 +44,12 @@ Sprechtext-Anfang · Visual-Art · Bild-Prompt-Kurzform). Erst nach OK generiere
 ## 4. Stimme (Skill `voiceover`)
 
 Sprechtexte vertonen, echte Dauern ins Storyboard schreiben
-(`python3 tools/storyboard.py timing projects/<slug>`).
+(`python3 tools/storyboard.py timing`).
 
 ## 5. Assets (Skill `comfyui`)
 
 Erst **eine** Probe-Szene erzeugen und dem User zeigen (Stil-Check), dann den Rest
-im Batch: `python3 tools/comfy_assets.py projects/<slug>`. Optional Musik.
+im Batch: `python3 tools/comfy_assets.py`. Optional Musik.
 
 ## 6. Szenen-Code (Skill `scene-coding`)
 
@@ -54,7 +61,7 @@ Kontaktbogen + Stichproben ansehen, Probleme selbst beheben, dann dem User zeige
 
 ## 8. Final-Render
 
-Render nach `projects/<slug>/renders/final.mp4`, Status `done` setzen und dem
+Render nach `video/renders/final.mp4`, Status `done` setzen und dem
 User Pfad, Laufzeit und eine Liste offener Punkte nennen.
 
 ## Arbeitsweise

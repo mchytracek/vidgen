@@ -5,7 +5,7 @@ description: Entwickelt Story und Sprechtext eines Erklärvideos aus einem Brief
 
 # Story & Skript
 
-Eingabe: `projects/<slug>/brief.md`. Ausgabe: `projects/<slug>/story.md`.
+Eingabe: `video/brief.md`. Ausgabe: `video/story.md`.
 
 ## Vorgehen
 

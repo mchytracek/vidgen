@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Einrichtung der lokalen Videoproduktion.
+# Einrichtung der lokalen Videoproduktion – einmal pro Rechner (nicht pro Video).
 #   scripts/setup.sh            # alles (MCP, Hersteller-Skills, Prüfung)
 #   scripts/setup.sh --mcp      # nur comfy-mcp installieren
 #   scripts/setup.sh --skills   # nur Hersteller-Skills (Remotion, Hyperframes, Tesseract)
@@ -25,13 +25,13 @@ if [[ "$want" == all || "$want" == --mcp ]]; then
 fi
 
 if [[ "$want" == all || "$want" == --skills ]]; then
-  step "Hersteller-Skills ins Projekt (.claude/skills, git-ignoriert)"
-  npx -y skills add remotion-dev/skills --agent claude-code -y \
+  step "Hersteller-Skills global (~/.claude/skills) – gelten für alle Video-Klone"
+  npx -y skills add remotion-dev/skills --agent claude-code --global -y \
     --skill remotion-best-practices --skill remotion-render --skill remotion-multimedia \
     --skill remotion-captions --skill remotion-studio --skill remotion-license
-  npx -y skills add heygen-com/hyperframes --agent claude-code -y \
+  npx -y skills add heygen-com/hyperframes --agent claude-code --global -y \
     --skill hyperframes --skill hyperframes-cli --skill hyperframes-registry --skill media-use
-  npx -y skills add mirage-hq/Tesseract --agent claude-code -y
+  npx -y skills add mirage-hq/Tesseract --agent claude-code --global -y
   echo "Tesseract-CLI (tsrct): Installationsanleitung im Skill tesseract-video (references/installation.md)."
 fi
 

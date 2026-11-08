@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-PROJECTS = REPO / "projects"
+VIDEO = REPO / "video"
 WORKFLOWS = REPO / "comfy" / "workflows"
 
 
@@ -18,12 +18,13 @@ def die(msg: str, code: int = 1) -> None:
     sys.exit(code)
 
 
-def project_dir(arg: str) -> Path:
-    p = Path(arg)
+def project_dir(arg: str | None = None) -> Path:
+    """Videoordner – Default `video/` im Repo, per --dir überschreibbar."""
+    p = Path(arg).expanduser() if arg else VIDEO
     if not p.is_absolute():
-        p = (Path.cwd() / p) if (Path.cwd() / p).exists() else PROJECTS / arg
+        p = Path.cwd() / p
     if not (p / "storyboard.json").exists():
-        die(f"Kein storyboard.json in {p}")
+        die(f"Kein storyboard.json in {p} – erst `scripts/init.sh \"<Titel>\"` ausführen")
     return p.resolve()
 
 

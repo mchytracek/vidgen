@@ -8,11 +8,11 @@ description: Qualitätskontrolle eines gerenderten Erklärvideos – Kontaktbög
 Du kannst Videos nicht abspielen – du **siehst Frames**. Deshalb systematisch:
 
 ```bash
-python3 tools/review.py projects/<slug>                 # Kontaktbogen je Szene + Gesamt
-python3 tools/review.py projects/<slug> --video renders/draft.mp4
+python3 tools/review.py                          # Kontaktbogen je Szene + Gesamt
+python3 tools/review.py --video renders/draft.mp4
 ```
 
-Ergebnis in `projects/<slug>/review/`: `contact_all.png` (1 Frame / 2 s),
+Ergebnis in `video/review/`: `contact_all.png` (1 Frame / 2 s),
 `scene_<id>.png` (Anfang/Mitte/Ende je Szene) und `report.md` (Dauern, Lautheit, Auflösung).
 Alle Bilder mit `Read` ansehen. Alternativ MCP `preview_media` für einzelne Clips.
 

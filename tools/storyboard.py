@@ -1,20 +1,19 @@
 #!/usr/bin/env python3
-"""Storyboard-Werkzeug: list | validate | show | timing | sync.
+"""Storyboard-Werkzeug für video/storyboard.json: validate | show | timing | sync.
 
-  python3 tools/storyboard.py list
-  python3 tools/storyboard.py validate projects/<slug>
-  python3 tools/storyboard.py show     projects/<slug>
-  python3 tools/storyboard.py timing   projects/<slug>   # misst Audio, setzt duration
-  python3 tools/storyboard.py sync     projects/<slug>   # kopiert storyboard.json nach assets/
+  python3 tools/storyboard.py validate
+  python3 tools/storyboard.py show
+  python3 tools/storyboard.py timing     # misst Audio, setzt duration
+  python3 tools/storyboard.py sync       # kopiert storyboard.json nach assets/
+  (alle mit optional --dir <videoordner>)
 """
 from __future__ import annotations
 
 import argparse
-import json
 import re
 import shutil
 
-from _common import PROJECTS, die, load_sb, media_duration, project_dir, save_sb
+from _common import die, load_sb, media_duration, project_dir, save_sb
 
 KINDS = {"image", "clip", "code", "hyperframes", "tesseract"}
 COMPOSITORS = {"remotion", "hyperframes", "tesseract"}
@@ -61,19 +60,6 @@ def validate(sb: dict) -> list[str]:
             errs.append(f"{where}: visual.component fehlt für kind=code")
     return errs
 
-
-def cmd_list(_):
-    rows = []
-    for sbf in sorted(PROJECTS.glob("*/storyboard.json")):
-        sb = json.loads(sbf.read_text(encoding="utf-8"))
-        rows.append((sbf.parent.name, sb.get("status", "?"), len(sb.get("scenes", [])),
-                     sb.get("totalDuration") or "–", sb.get("title", "")))
-    if not rows:
-        print("Keine Projekte. Neu: python3 tools/new_project.py <slug> --title …")
-        return
-    print(f"{'slug':24} {'status':11} {'Szenen':>6} {'Dauer':>7}  Titel")
-    for r in rows:
-        print(f"{r[0]:24} {r[1]:11} {r[2]:>6} {str(r[3]):>7}  {r[4]}")
 
 
 def cmd_validate(a):
@@ -146,10 +132,9 @@ def cmd_sync(a):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
-    sub.add_parser("list").set_defaults(fn=cmd_list)
     for name, fn in (("validate", cmd_validate), ("show", cmd_show), ("timing", cmd_timing), ("sync", cmd_sync)):
         p = sub.add_parser(name)
-        p.add_argument("project")
+        p.add_argument("--dir", dest="project", help="Videoordner (Default: video/)")
         p.set_defaults(fn=fn)
     a = ap.parse_args()
     a.fn(a)

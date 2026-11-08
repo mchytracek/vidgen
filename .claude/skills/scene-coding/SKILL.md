@@ -15,7 +15,7 @@ Fehlen sie → `vidgen-setup`.
 
 - **Daten aus dem Storyboard**, nie hart codiert: Texte, Dauern, Asset-Pfade.
   Szenenstart = Summe der vorherigen `duration`.
-- Assets liegen in `projects/<slug>/assets/` (Bilder, Clips, Audio, Musik).
+- Assets liegen in `video/assets/` (Bilder, Clips, Audio, Musik).
 - Typo-Sicherheitsabstand 5 % vom Rand; Schrift ≥ 42 px bei 1080p; max. 7 Wörter
   pro Bildschirmzeile; Text erscheint *mit* dem gesprochenen Wort, nicht davor.
 - Bewegung hat Bedeutung: Ken-Burns 1.0→1.08 über die Szene, Ease-out für Eintritte,
@@ -23,35 +23,35 @@ Fehlen sie → `vidgen-setup`.
 - LTX-Clips stumm einbinden (Sprache liegt drüber); Musik 0.10–0.18 Lautstärke,
   am Ende 1 s ausblenden.
 
-## Remotion (Default) – `projects/<slug>/remotion/`
+## Remotion (Default) – `video/remotion/`
 
-Vorlage aus `templates/project/remotion/` (kopiert `new_project.py`). Aufbau:
+Vorlage aus `templates/project/remotion/` (kopiert `scripts/init.sh`). Aufbau:
 
 - `src/Root.tsx` – liest `storyboard.json` (über `public/` = `../assets` + Kopie
   des Storyboards), berechnet Gesamtdauer per `calculateMetadata`.
-- `src/Explainer.tsx` – legt Szenen als `<Series>` hintereinander, Audio je Szene,
+- `src/Explainer.tsx` – legt Szenen als `<Sequence>` hintereinander, Audio je Szene,
   Musik global.
 - `src/scenes/*.tsx` – eine Komponente je `visual.component`
   (`TitleCard`, `ImageKenBurns`, `ClipScene`, `BulletList`, `BigNumber`, `ImageWithCaption`).
   Neue Szenentypen hier anlegen und in `src/scenes/index.ts` registrieren.
 
 ```bash
-cd projects/<slug>/remotion && npm install          # einmalig
-npx remotion studio                                 # Live-Vorschau (Browser)
+cd video/remotion && npm install                      # einmalig (macht init.sh)
+npx remotion studio                                   # Live-Vorschau (Browser)
 npx remotion still Explainer --frame=120 ../review/f120.png   # Einzelbild prüfen
 npx remotion render Explainer ../renders/final.mp4
 ```
 
-Vor dem Render `python3 tools/storyboard.py sync projects/<slug>` (kopiert das
+Vor dem Render `python3 tools/storyboard.py sync` (kopiert das
 Storyboard nach `assets/storyboard.json`, damit Remotion es lädt).
 
-## Hyperframes – `projects/<slug>/hyperframes/`
+## Hyperframes – `video/hyperframes/`
 
 HTML-Komposition mit `data-start`/`data-duration`/`data-track-index`, GSAP für
 Animationen, deterministischer Render über Headless Chrome + FFmpeg.
 
 ```bash
-cd projects/<slug> && npx hyperframes init hyperframes
+cd video && npx hyperframes init hyperframes
 npx hyperframes preview      # im Ordner hyperframes/
 npx hyperframes render       # → MP4
 ```
@@ -71,5 +71,5 @@ Compositor für das ganze Video nutzen.
 ## Engines mischen
 
 Haupt-Compositor rendert das Video; Szenen anderer Engines werden vorab einzeln
-zu `projects/<slug>/assets/clips/<id>_<engine>.mp4` gerendert (exakt
+zu `video/assets/clips/<id>_<engine>.mp4` gerendert (exakt
 `duration` Sekunden, gleiche Auflösung/fps) und im Compositor wie ein Clip abgespielt.

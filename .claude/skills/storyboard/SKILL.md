@@ -6,7 +6,7 @@ description: Übersetzt eine Story in ein maschinenlesbares storyboard.json – 
 # Storyboard
 
 Eingabe: `story.md`. Ausgabe: `storyboard.json` gemäß `schemas/storyboard.schema.json`.
-Nach jedem Schreiben: `python3 tools/storyboard.py validate projects/<slug>`.
+Nach jedem Schreiben: `python3 tools/storyboard.py validate`.
 
 ## Globale Felder festlegen
 

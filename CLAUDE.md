@@ -6,15 +6,27 @@ Stimme und Musik erzeugt das lokale **ComfyUI** (über den MCP-Server
 `comfy-mcp`), und ein Code-Renderer (**Remotion**, **Hyperframes** oder
 **Tesseract**) setzt alles zum fertigen MP4 zusammen.
 
+## Repo-Modell: ein Klon = ein Video
+
+Dieses Repo ist ein **Template**. Für jedes Video wird es neu geklont und mit
+`scripts/init.sh "<Titel>"` initialisiert. Danach gilt:
+
+- **`video/`** gehört dem Video (Brief, Story, Storyboard, Szenen-Code, Assets, Renders).
+  Im Template existiert der Ordner nicht.
+- **Alles andere** (`.claude/`, `tools/`, `comfy/`, `scripts/`, `templates/`, `schemas/`)
+  ist Template-Code. Verbesserungen daran gehören ins Template-Repo, nicht nur in
+  diesen Klon – den User darauf hinweisen. Updates holen: `scripts/update-template.sh`.
+
 ## Einstieg
 
 - Neues Video oder „mach ein Video über …“ → Skill **`/explainer`** (Orchestrator).
+  Fehlt `video/`, initialisiert er zuerst das Repo.
   Er ruft die Phasen-Skills in der richtigen Reihenfolge auf.
 - Erste Einrichtung / etwas geht nicht → Skill **`/vidgen-setup`** bzw. `scripts/doctor.sh`.
 
 ## Pipeline (Kurzform)
 
-| # | Phase       | Skill               | Ergebnis im Projektordner                 | Gate         |
+| # | Phase       | Skill               | Ergebnis in `video/`                      | Gate         |
 |---|-------------|---------------------|-------------------------------------------|--------------|
 | 1 | Briefing    | `explainer`         | `brief.md`                                | User bestätigt |
 | 2 | Story       | `story`             | `story.md` (Kernaussage, Bogen, Skript)   | User bestätigt |
@@ -32,7 +44,7 @@ Story und Storyboard abgenickt haben. Ausnahme: Er sagt ausdrücklich „mach du
 
 1. **`storyboard.json` ist die einzige Wahrheit.** Jede Phase liest und schreibt
    dort (Dauern, Asset-Pfade, Status). Nie Szeneninfos nur im Code pflegen.
-   Nach jeder Änderung: `python3 tools/storyboard.py validate projects/<slug>`.
+   Nach jeder Änderung: `python3 tools/storyboard.py validate`.
 2. **Ton zuerst, dann Bild.** Szenendauern ergeben sich aus der Sprachaufnahme
    (+ Atempause), nicht umgekehrt.
 3. **Lokal-first.** Keine Cloud-/Partner-Modelle (`partner_generate`,
@@ -44,8 +56,9 @@ Story und Storyboard abgenickt haben. Ausnahme: Er sagt ausdrücklich „mach du
    `preview_media` (Kontaktbogen) prüfen, bevor sie verbaut werden.
 6. **Ein Compositor pro Projekt** (`storyboard.compositor`). Andere Engines
    rendern einzelne Szenen zu MP4, die als `clip` eingebunden werden.
-7. Projektordner: `projects/<slug>/`. Generierte Medien sind git-ignoriert;
-   Text-Artefakte (brief, story, storyboard, Szenen-Code) werden versioniert.
+7. Videoordner: `video/`. Generierte Medien sind git-ignoriert;
+   Text-Artefakte (brief, story, storyboard, Szenen-Code) werden versioniert –
+   nach jeder Phase committen.
 
 ## Wichtige Pfade
 
@@ -54,7 +67,7 @@ Story und Storyboard abgenickt haben. Ausnahme: Er sagt ausdrücklich „mach du
 - `templates/` – Projektvorlage inkl. Remotion-Gerüst
 - `tools/` – Hilfsskripte (nur Python-Stdlib, `python3 tools/<x>.py --help`)
 - `.claude/skills/` – eigene Skills; Hersteller-Skills (Remotion, Hyperframes,
-  Tesseract) installiert `scripts/setup.sh` daneben (git-ignoriert)
+  Tesseract) installiert `scripts/setup.sh` global nach `~/.claude/skills`
 
 ## Umgebung (Stand Einrichtung)
 

@@ -14,13 +14,13 @@ Slot-Adressen: `comfy/workflows/README.md` – **vor dem ersten Lauf lesen.**
 1. `server_info` – läuft ComfyUI? (Einmal pro Sitzung.)
 2. **Arbeitskopie** anlegen – `set_workflow_slot` schreibt *in place*, die Vorlagen in
    `comfy/workflows/` dürfen nie verändert werden:
-   `cp comfy/workflows/image_z_image_turbo.json projects/<slug>/.work/s03_image.json`, dann
-   `set_workflow_slot(workflow_path="projects/<slug>/.work/s03_image.json",
-   overrides={"57.text": "<prompt>, <style.imagePrompt>", "57.width": 1344, "57.height": 768, "57.seed": 7, "9.filename_prefix": "vidgen/<slug>/s03"})`.
+   `cp comfy/workflows/image_z_image_turbo.json video/.work/s03_image.json`, dann
+   `set_workflow_slot(workflow_path="video/.work/s03_image.json",
+   overrides={"57.text": "<prompt>, <style.imagePrompt>", "57.width": 1344, "57.height": 768, "57.seed": 7, "9.filename_prefix": "vidgen/<storyboard.slug>/s03"})`.
 3. `run_workflow(workflow_path=<kopie>, wait=true, timeout_seconds=…)`
    – Bild: 60–120 s, LTX-Clip 5 s: **600–1200 s** auf Apple Silicon.
    Bei langen Jobs `wait=false` und später `job(action="watch", prompt_id=…)`.
-4. `fetch_outputs(prompt_id, out_dir="projects/<slug>/assets/images")`.
+4. `fetch_outputs(prompt_id, out_dir="video/assets/images")`.
 5. **Ansehen:** Bilder mit `Read` öffnen; Videos mit
    `preview_media(media_path=…)` als Kontaktbogen. Passt Stil/Motiv nicht →
    Prompt schärfen oder Seed wechseln, nicht weiterbauen.
@@ -29,10 +29,10 @@ Slot-Adressen: `comfy/workflows/README.md` – **vor dem ersten Lauf lesen.**
 ## Batch für ein ganzes Storyboard
 
 ```bash
-python3 tools/comfy_assets.py projects/<slug>                 # alle fehlenden Assets
-python3 tools/comfy_assets.py projects/<slug> --only s03,s07  # gezielt neu
-python3 tools/comfy_assets.py projects/<slug> --kind image    # nur Bilder
-python3 tools/comfy_assets.py projects/<slug> --dry-run       # nur zeigen, was liefe
+python3 tools/comfy_assets.py                                 # alle fehlenden Assets
+python3 tools/comfy_assets.py                 --only s03,s07  # gezielt neu
+python3 tools/comfy_assets.py                 --kind image    # nur Bilder
+python3 tools/comfy_assets.py                 --dry-run       # nur zeigen, was liefe
 ```
 
 Das Skript nutzt dieselbe Engine (`comfy` CLI) wie der MCP-Server, wendet

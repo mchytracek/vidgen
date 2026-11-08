@@ -48,9 +48,17 @@ for s in explainer story storyboard comfyui voiceover scene-coding video-review 
 done
 ok "eigene Skills vorhanden"
 for s in remotion-best-practices hyperframes hyperframes-cli tesseract-video tesseract-motion; do
-  [ -d ".claude/skills/$s" ] && ok "Hersteller-Skill $s" || warn "Hersteller-Skill $s fehlt → scripts/setup.sh --skills"
+  if [ -d ".claude/skills/$s" ] || [ -d "$HOME/.claude/skills/$s" ]; then ok "Hersteller-Skill $s"
+  else warn "Hersteller-Skill $s fehlt → scripts/setup.sh --skills"; fi
 done
 command -v tsrct >/dev/null && ok "tsrct (Tesseract CLI)" || warn "tsrct fehlt (nur für Tesseract nötig)"
 
-echo "Projekte"
-python3 tools/storyboard.py list | sed 's/^/  /'
+echo "Video"
+if [ -f video/storyboard.json ]; then
+  python3 tools/storyboard.py show | head -1 | sed 's/^# /  /'
+  [ -d video/remotion ] && { [ -d video/remotion/node_modules ] && ok "Remotion installiert" || warn "cd video/remotion && npm install"; }
+else
+  warn "noch nicht initialisiert → scripts/init.sh \"<Titel>\""
+fi
+git remote get-url template >/dev/null 2>&1 && ok "Template-Remote: $(git remote get-url template)" \
+  || warn "kein Remote 'template' (Updates: git remote add template <url>)"

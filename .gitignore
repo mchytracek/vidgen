@@ -1,10 +1,12 @@
 # --- generierte Medien (groß, reproduzierbar) ---
-projects/*/assets/images/
-projects/*/assets/clips/
-projects/*/assets/audio/
-projects/*/assets/music/
-projects/*/renders/
-projects/*/review/
+video/assets/images/
+video/assets/clips/
+video/assets/audio/
+video/assets/music/
+video/assets/storyboard.json
+video/renders/
+video/review/
+video/.work/
 *.mp4
 *.mov
 *.webm

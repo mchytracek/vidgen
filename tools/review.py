@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Review-Hilfen für einen Render: Kontaktbögen, Szenen-Frames, Lautheit.
 
-  python3 tools/review.py projects/<slug>                    # nimmt renders/final.mp4
-  python3 tools/review.py projects/<slug> --video renders/draft.mp4
-  python3 tools/review.py projects/<slug> --normalize        # → renders/final_norm.mp4 (-16 LUFS)
+  python3 tools/review.py   # nimmt renders/final.mp4
+  python3 tools/review.py --video renders/draft.mp4
+  python3 tools/review.py --normalize        # → renders/final_norm.mp4 (-16 LUFS)
 """
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ def ff(*args: str):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("project")
+    ap.add_argument("--dir", dest="project", help="Videoordner (Default: video/)")
     ap.add_argument("--video", default="renders/final.mp4")
     ap.add_argument("--normalize", action="store_true")
     a = ap.parse_args()

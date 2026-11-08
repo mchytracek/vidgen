@@ -13,22 +13,75 @@ Briefing ─▶ Story ─▶ Storyboard ─▶ Stimme ─▶ ComfyUI-Assets ─�
                                                                            Tesseract        LUFS
 ```
 
-## Schnellstart
+## Prinzip: ein Klon = ein Video
+
+Dieses Repo ist ein **Template**. Für jedes neue Video klonst du es in einen
+eigenen Ordner und initialisierst es. Der Klon wird dann zum Git-Repo *dieses*
+Videos – Brief, Story, Storyboard und Szenen-Code sind versioniert, generierte
+Medien (Bilder, Clips, Audio, Renders) sind git-ignoriert.
+
+```
+vidgen (Template)                     mein-video (Klon)
+├── .claude/skills/  ─┐               ├── .claude/ tools/ comfy/ …   ← Template-Code
+├── tools/            │  git clone    │                                 (Updates per
+├── comfy/workflows/  ├────────────▶  │                                  update-template.sh)
+├── templates/        │  init.sh      └── video/                     ← gehört dem Video
+└── scripts/         ─┘                   ├── brief.md  story.md  storyboard.json
+                                          ├── remotion/   (Szenen-Code)
+                                          ├── assets/     (ComfyUI-Output, ignoriert)
+                                          └── renders/    (final.mp4, ignoriert)
+```
+
+## Schnellstart: neues Video
+
+Einmalig pro Rechner (comfy-mcp, Hersteller-Skills):
 
 ```bash
-scripts/setup.sh      # comfy-mcp + Hersteller-Skills installieren, danach Prüfung
+scripts/setup.sh
+```
+
+Pro Video:
+
+```bash
+git clone <template-url> wie-dns-funktioniert
 ```
 
 ```bash
-scripts/doctor.sh     # jederzeit: was läuft, was fehlt
+cd wie-dns-funktioniert && scripts/init.sh "Wie DNS funktioniert" --duration 60
 ```
 
-Dann Claude Code im Repo starten und z. B. sagen:
+`init.sh` legt `video/` an, benennt `origin` in `template` um (damit du später
+Updates holen und ein eigenes Remote anlegen kannst), committet und installiert
+Remotion. Optionen: `--format 9:16`, `--compositor hyperframes|tesseract`,
+`--keep-origin`, `--no-install`, `--no-commit`.
 
-> /explainer Mach ein 60-Sekunden-Video, das Einsteigern erklärt, wie DNS funktioniert.
+Dann Claude Code im Ordner starten:
+
+> /explainer Erklär Einsteigern in 60 Sekunden, wie DNS funktioniert.
 
 Claude fragt Briefing-Details ab, zeigt Story und Storyboard zur Freigabe, erzeugt
-die Assets und rendert nach `projects/<slug>/renders/final.mp4`.
+die Assets, committet nach jeder Phase und rendert nach `video/renders/final.mp4`.
+
+Eigenes Remote für das Video (optional):
+
+```bash
+git remote add origin <url-des-video-repos> && git push -u origin HEAD
+```
+
+Verbesserungen aus dem Template übernehmen (Skills, Tools, Workflows):
+
+```bash
+scripts/update-template.sh
+```
+
+Diagnose jederzeit:
+
+```bash
+scripts/doctor.sh
+```
+
+> **Hinweis:** Verbesserst du Skills oder Tools in einem Video-Klon, übertrage sie
+> ins Template-Repo – sonst profitieren künftige Videos nicht davon.
 
 ## Voraussetzungen
 
@@ -46,14 +99,14 @@ die Assets und rendert nach `projects/<slug>/renders/final.mp4`.
 ```
 CLAUDE.md                 Regeln & Pipeline für Claude
 .mcp.json                 MCP-Server comfy-mcp
-.claude/skills/           eigene Skills (s. u.) + Hersteller-Skills (via setup.sh)
+.claude/skills/           eigene Skills (s. u.)
 comfy/workflows/          geprüfte ComfyUI-Workflows + Slot-Referenz (README.md)
 schemas/                  storyboard.schema.json – Datenvertrag aller Phasen
-templates/project/        Projektvorlage inkl. Remotion-Gerüst (rendert direkt aus storyboard.json)
+templates/project/        Vorlage für video/ inkl. Remotion-Gerüst (rendert direkt aus storyboard.json)
 templates/claude-settings.json  empfohlene Permissions (→ .claude/settings.json kopieren)
-tools/                    Python-Helfer (nur Stdlib): new_project, storyboard, comfy_assets, tts, review
-scripts/                  setup.sh, doctor.sh
-projects/<slug>/          ein Ordner pro Video (Medien git-ignoriert)
+tools/                    Python-Helfer (nur Stdlib): init_video, storyboard, comfy_assets, tts, review
+scripts/                  init.sh, update-template.sh, setup.sh, doctor.sh
+video/                    entsteht erst durch init.sh – das Video dieses Klons
 voices/                   Referenzstimmen für Voice-Cloning (nur mit Rechten!)
 ```
 
@@ -70,17 +123,17 @@ voices/                   Referenzstimmen für Voice-Cloning (nur mit Rechten!)
 | `video-review` | Kontaktbögen, Checkliste, Lautheit |
 | `vidgen-setup` | Einrichtung & Diagnose |
 
-Hersteller-Skills (von `setup.sh`, nicht im Repo): `remotion-*` (remotion-dev/skills),
+Hersteller-Skills (von `setup.sh` global nach `~/.claude/skills`, nicht im Repo): `remotion-*` (remotion-dev/skills),
 `hyperframes*` (heygen-com/hyperframes), `tesseract-*` (mirage-hq/Tesseract).
 
 ### Manuell ohne Claude
 
 ```bash
-python3 tools/new_project.py demo --title "Demo"
-python3 tools/tts.py projects/demo --backend say
-python3 tools/comfy_assets.py projects/demo
-cd projects/demo/remotion && npm install && npx remotion render Explainer ../renders/final.mp4
-python3 tools/review.py projects/demo
+scripts/init.sh "Demo"
+python3 tools/tts.py --backend say      # Entwurfsstimme, setzt Timing
+python3 tools/comfy_assets.py           # Bilder/Clips/Musik aus ComfyUI
+(cd video/remotion && npx remotion render Explainer ../renders/final.mp4)
+python3 tools/review.py                 # Kontaktbögen, Lautheit (braucht ffmpeg)
 ```
 
 ## Recherche: Gibt es das schon? (Stand 2026-11)
