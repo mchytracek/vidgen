@@ -370,12 +370,28 @@ def chatterbox_once(pdir: Path, sb: dict, key: str, text: str, ref_name: str | N
     return Path(env["data"]["outputs"][0])
 
 
+def with_scene_voice(sb: dict, s: dict) -> dict:
+    """Szenen-Override `scene.voice` ({"seed": …, "params": {…}}) über `storyboard.voice` legen.
+
+    Beispiel: ruhigeres, am Ende fallendes Schluss-Statement mit
+    {"seed": 2025, "params": {"cfg_weight": 0.3, "exaggeration": 0.35}}.
+    """
+    sv = s.get("voice") or {}
+    if not sv:
+        return sb
+    v = sb.get("voice") or {}
+    merged = {**v, **{k: val for k, val in sv.items() if k != "params"},
+              "params": {**(v.get("params") or {}), **(sv.get("params") or {})}}
+    return {**sb, "voice": merged}
+
+
 def tts_chatterbox(pdir: Path, sb: dict, s: dict, ref_name: str | None, dst_stem: Path) -> Path:
     """Satzweise erzeugen, Stille trimmen, Dauer/Aussetzer prüfen (sonst neuer Seed), zusammensetzen.
 
     ChatterBox Multilingual neigt bei mehreren Sätzen am Stück zu langen Pausen und
     Gebrabbel nach dem Satzende – einzeln erzeugte Sätze sind deutlich stabiler.
     """
+    sb = with_scene_voice(sb, s)
     base_seed = int((sb.get("voice") or {}).get("seed", 1234))
     if not ffmpeg_ok():  # ohne ffmpeg: ein Take, ungeprüft
         src = chatterbox_once(pdir, sb, s["id"], s["narration"], ref_name, base_seed)

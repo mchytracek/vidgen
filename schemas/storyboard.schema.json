@@ -93,6 +93,11 @@
           "onScreenText": { "type": "array", "items": { "type": "string" } },
           "transition": { "enum": ["cut", "fade", "slide", "wipe"] },
           "padAfter": { "type": "number" },
+          "voice": {
+            "type": "object",
+            "description": "Stimm-Override nur für diese Szene, überschreibt storyboard.voice: {\"seed\": 2025, \"params\": {\"cfg_weight\": 0.3, \"exaggeration\": 0.35}}. cfg_weight niedriger = ruhiger/gedehnter, exaggeration niedriger = sachlicher.",
+            "properties": { "seed": { "type": "integer" }, "params": { "type": "object" } }
+          },
           "minDuration": { "type": "number" },
           "audioDuration": { "type": "number", "description": "(auto)" },
           "duration": { "type": "number", "description": "(auto) Sekunden" },

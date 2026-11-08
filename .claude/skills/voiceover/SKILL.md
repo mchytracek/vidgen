@@ -56,6 +56,10 @@ Aussprache: **`voice.lexicon`** im Storyboard, gilt nur für die Sprachausgabe
 `{"DNS": "Deh-Enn-Ess", "IP-Adresse": "Ih-Peh-Adresse", "Punkt de": "Punkt, Deh-Eh", "Nameserver": "Neim-Server"}`.
 Komposita mit Bindestrich als eigener Eintrag (`IP` trifft `IP-Adresse` nicht).
 `voice.params` setzt Node-Parameter, z. B. `{"temperature": 0.55}` (weniger Abschweifen).
+Pro Szene überschreibt `scene.voice` (`seed`, `params`) die globalen Werte. Endet ein Satz zu
+abrupt bzw. ohne fallende Betonung (typisch beim Schlusssatz): `{"params": {"cfg_weight": 0.3,
+"exaggeration": 0.35}}` – ruhiger, letzte Silbe gedehnt, Tonhöhe fällt. Mehrere Seeds probieren.
+Beim letzten Satz außerdem `padAfter` ≈ 1.5, damit das Video nicht direkt nach dem Wort endet.
 
 Whisper prüft Vollständigkeit, nicht Klang – den User auf Stellen hinweisen,
 die er anhören soll (Abkürzungen, Fremdwörter, Satzenden).
