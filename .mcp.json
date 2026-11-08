@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "comfy-mcp": {
+      "command": "comfy-mcp",
+      "args": [],
+      "env": {
+        "COMFY_MCP_DEBUG_LOG": "0"
+      }
+    }
+  }
+}

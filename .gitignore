@@ -1,0 +1,36 @@
+# --- generierte Medien (groß, reproduzierbar) ---
+projects/*/assets/images/
+projects/*/assets/clips/
+projects/*/assets/audio/
+projects/*/assets/music/
+projects/*/renders/
+projects/*/review/
+*.mp4
+*.mov
+*.webm
+*.mp3
+*.wav
+*.aiff
+!voices/*.wav
+!voices/*.mp3
+
+# --- Node / Python ---
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+.remotion/
+out/
+
+# --- Hersteller-Skills (installiert via scripts/setup.sh, eigene Lizenzen) ---
+.claude/skills/remotion*/
+.claude/skills/hyperframes*/
+.claude/skills/media-use/
+.claude/skills/tesseract*/
+.agents/
+skills-lock.json
+
+# --- lokal ---
+.claude/settings.local.json
+.DS_Store
+.env

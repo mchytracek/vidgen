@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vidgen/storyboard.schema.json",
+  "title": "vidgen Storyboard",
+  "description": "Datenvertrag zwischen allen Phasen. Felder mit (auto) schreiben die Tools.",
+  "type": "object",
+  "required": ["title", "slug", "language", "format", "style", "compositor", "scenes"],
+  "properties": {
+    "title": { "type": "string" },
+    "slug": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "status": { "enum": ["brief", "story", "storyboard", "voice", "assets", "scenes", "review", "done"] },
+    "language": { "type": "string", "description": "BCP-47, z. B. de" },
+    "targetDuration": { "type": "number", "description": "Sekunden laut Brief" },
+    "totalDuration": { "type": "number", "description": "(auto) Summe der Szenendauern" },
+    "format": {
+      "type": "object",
+      "required": ["width", "height", "fps"],
+      "properties": {
+        "width": { "type": "integer" },
+        "height": { "type": "integer" },
+        "fps": { "type": "integer" }
+      }
+    },
+    "style": {
+      "type": "object",
+      "required": ["imagePrompt"],
+      "properties": {
+        "imagePrompt": { "type": "string", "description": "Stil-Suffix für jeden Bildprompt" },
+        "palette": {
+          "type": "object",
+          "properties": {
+            "background": { "type": "string" },
+            "foreground": { "type": "string" },
+            "accent": { "type": "string" },
+            "muted": { "type": "string" }
+          }
+        },
+        "font": { "type": "string" }
+      }
+    },
+    "voice": {
+      "type": "object",
+      "properties": {
+        "backend": { "enum": ["comfyui-chatterbox", "say"] },
+        "reference": { "type": ["string", "null"], "description": "Pfad relativ zum Repo, z. B. voices/michael.wav" },
+        "language": { "type": "string", "description": "ChatterBox-Sprachname, z. B. 'German (de)'" },
+        "sayVoice": { "type": "string", "description": "macOS-Stimme für Backend say, z. B. Anna" },
+        "seed": { "type": "integer" }
+      }
+    },
+    "music": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "tags": { "type": "string" },
+        "bpm": { "type": "integer" },
+        "volume": { "type": "number" },
+        "file": { "type": ["string", "null"], "description": "(auto) relativ zu assets/" }
+      }
+    },
+    "compositor": { "enum": ["remotion", "hyperframes", "tesseract"] },
+    "scenes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "narration", "visual"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^s[0-9]{2,3}[a-z]?$" },
+          "beat": { "type": "string" },
+          "narration": { "type": "string" },
+          "visual": {
+            "type": "object",
+            "required": ["kind"],
+            "properties": {
+              "kind": { "enum": ["image", "clip", "code", "hyperframes", "tesseract"] },
+              "prompt": { "type": ["string", "null"] },
+              "motionPrompt": { "type": ["string", "null"] },
+              "seed": { "type": "integer" },
+              "component": { "type": "string" },
+              "props": { "type": "object" }
+            }
+          },
+          "onScreenText": { "type": "array", "items": { "type": "string" } },
+          "transition": { "enum": ["cut", "fade", "slide", "wipe"] },
+          "padAfter": { "type": "number" },
+          "minDuration": { "type": "number" },
+          "audioDuration": { "type": "number", "description": "(auto)" },
+          "duration": { "type": "number", "description": "(auto) Sekunden" },
+          "assets": {
+            "type": "object",
+            "description": "(auto) Pfade relativ zu assets/",
+            "properties": {
+              "image": { "type": "string" },
+              "clip": { "type": "string" },
+              "audio": { "type": "string" },
+              "render": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

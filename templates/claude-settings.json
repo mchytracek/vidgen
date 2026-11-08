@@ -1,0 +1,46 @@
+{
+  "enabledMcpjsonServers": ["comfy-mcp"],
+  "permissions": {
+    "allow": [
+      "mcp__comfy-mcp__server_info",
+      "mcp__comfy-mcp__which",
+      "mcp__comfy-mcp__system_stats",
+      "mcp__comfy-mcp__get_logs",
+      "mcp__comfy-mcp__job",
+      "mcp__comfy-mcp__fetch_outputs",
+      "mcp__comfy-mcp__preview_media",
+      "mcp__comfy-mcp__run_workflow",
+      "mcp__comfy-mcp__run_template",
+      "mcp__comfy-mcp__generate_image",
+      "mcp__comfy-mcp__upload_file",
+      "mcp__comfy-mcp__free_memory",
+      "mcp__comfy-mcp__validate_workflow",
+      "mcp__comfy-mcp__list_workflow_slots",
+      "mcp__comfy-mcp__list_workflow_notes",
+      "mcp__comfy-mcp__set_workflow_slot",
+      "mcp__comfy-mcp__vary_workflow",
+      "mcp__comfy-mcp__search_templates",
+      "mcp__comfy-mcp__get_template",
+      "mcp__comfy-mcp__fetch_template",
+      "mcp__comfy-mcp__nodes",
+      "mcp__comfy-mcp__workflow_deps",
+      "mcp__comfy-mcp__search_models",
+      "Bash(python3 tools/:*)",
+      "Bash(scripts/doctor.sh:*)",
+      "Bash(ffmpeg:*)",
+      "Bash(ffprobe:*)",
+      "Bash(comfy --json:*)",
+      "Bash(npx remotion:*)",
+      "Bash(npx hyperframes:*)",
+      "Bash(tsrct:*)"
+    ],
+    "ask": [
+      "mcp__comfy-mcp__partner_generate",
+      "mcp__comfy-mcp__install_node",
+      "mcp__comfy-mcp__download_model",
+      "mcp__comfy-mcp__update_comfyui",
+      "mcp__comfy-mcp__restart_comfyui",
+      "mcp__comfy-mcp__stop_comfyui"
+    ]
+  }
+}
