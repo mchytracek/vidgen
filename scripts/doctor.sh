@@ -14,6 +14,9 @@ done
 node -e 'process.exit(+process.versions.node.split(".")[0] >= 22 ? 0 : 1)' 2>/dev/null || warn "Node < 22 (Hyperframes braucht ≥ 22)"
 command -v ffmpeg >/dev/null && ok "ffmpeg" || bad "ffmpeg fehlt → brew install ffmpeg (Hyperframes, Review, MP3)"
 command -v ffprobe >/dev/null && ok "ffprobe" || warn "ffprobe fehlt (Fallback: afinfo)"
+WHISPER_MODEL="${VIDGEN_WHISPER_MODEL:-$HOME/.local/share/whisper-cpp/ggml-large-v3-turbo-q5_0.bin}"
+if command -v whisper-cli >/dev/null && [ -f "$WHISPER_MODEL" ]; then ok "whisper-cli + Modell (Sprachprüfung)"
+else warn "whisper-cli/Modell fehlt → Vollständigkeit der Sprachaufnahmen ungeprüft (siehe vidgen-setup)"; fi
 
 echo "ComfyUI"
 if stats=$(curl -s -m 3 "$COMFY_URL/system_stats"); then

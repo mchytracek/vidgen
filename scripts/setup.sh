@@ -37,6 +37,7 @@ fi
 
 if [[ "$want" == all ]]; then
   command -v ffmpeg >/dev/null || echo "Hinweis: ffmpeg fehlt → brew install ffmpeg"
+  command -v whisper-cli >/dev/null || echo "Hinweis: whisper-cli fehlt → brew install whisper-cpp (+ Modell, siehe Skill vidgen-setup)"
   step "Prüfung"
   scripts/doctor.sh
   echo

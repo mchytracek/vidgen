@@ -16,6 +16,7 @@ description: Richtet die lokale Videoproduktion ein und diagnostiziert sie – C
 | comfy-cli zeigt auf richtige Installation | `comfy --json which` | `comfy set-default <pfad-zu-ComfyUI>` |
 | comfy-mcp | `command -v comfy-mcp` | `uv tool install comfy-mcp`, dann Claude Code neu starten |
 | FFmpeg/ffprobe | `command -v ffmpeg` | `brew install ffmpeg` |
+| Whisper (Sprachprüfung) | `command -v whisper-cli` + Modell `~/.local/share/whisper-cpp/ggml-large-v3-turbo-q5_0.bin` | `brew install whisper-cpp`; Modell (≈ 574 MB) von `huggingface.co/ggerganov/whisper.cpp` (`resolve/main/ggml-large-v3-turbo-q5_0.bin`) laden; anderer Pfad über `VIDGEN_WHISPER_MODEL` |
 | Node ≥ 22 | `node --version` | – |
 | Hersteller-Skills | `ls .claude/skills` | `scripts/setup.sh --skills` |
 | ChatterBox (TTS) | `comfy --json workflow validate --workflow comfy/workflows/audio-chatterbox_tts_multilingual.json` | MCP `install_node` / ComfyUI-Manager: *ComfyUI_Fill-ChatterBox* |

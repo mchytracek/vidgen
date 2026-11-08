@@ -27,7 +27,10 @@ I2V = {"file": "video_ltx2_3_i2v.json", "image": "269.image", "prompt": "320.val
        "seconds": "320.value_4", "fps": "320.value_5", "seed": "320.noise_seed",
        "prefix": "75.filename_prefix"}
 MUSIC = {"file": "audio_ace_step1_5_xl_turbo.json", "tags": "94.tags", "lyrics": "94.lyrics",
-         "bpm": "94.bpm", "seconds": "99.value", "seed": "109.value", "prefix": "111.filename_prefix"}
+         "bpm": "94.bpm",
+         # 99 ist ein UI-PrimitiveNode: beim Konvertieren ins API-Format zählen die
+         # Widget-Werte der Ziel-Nodes, deshalb Dauer zusätzlich direkt in 98/94 setzen.
+         "seconds": ["99.value", "98.seconds", "94.duration"], "seed": "109.value", "prefix": "111.filename_prefix"}
 
 IMAGE_SIZE = {"landscape": (1344, 768), "portrait": (768, 1344), "square": (1024, 1024)}
 CLIP_SIZE = {"landscape": (1280, 720), "portrait": (720, 1280), "square": (960, 960)}
@@ -42,7 +45,8 @@ def run_workflow(pdir: Path, name: str, spec: dict, overrides: dict, timeout: in
     work = pdir / ".work" / f"{name}.json"
     work.parent.mkdir(exist_ok=True)
     shutil.copyfile(WORKFLOWS / spec["file"], work)
-    pairs = [f"{spec[k]}={v}" for k, v in overrides.items()]
+    pairs = [f"{slot}={v}" for k, v in overrides.items()
+             for slot in (spec[k] if isinstance(spec[k], list) else [spec[k]])]
     if dry:
         print(f"  [dry] {spec['file']}: " + "  ".join(p[:70] for p in pairs))
         return None

@@ -45,7 +45,16 @@
         "reference": { "type": ["string", "null"], "description": "Pfad relativ zum Repo, z. B. voices/michael.wav" },
         "language": { "type": "string", "description": "ChatterBox-Sprachname, z. B. 'German (de)'" },
         "sayVoice": { "type": "string", "description": "macOS-Stimme für Backend say, z. B. Anna" },
-        "seed": { "type": "integer" }
+        "seed": { "type": "integer" },
+        "lexicon": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "Aussprache-Lexikon nur für die Sprachausgabe: {\"DNS\": \"Deh-Enn-Ess\"} (ganze Wörter, ohne Groß/Klein)"
+        },
+        "params": {
+          "type": "object",
+          "description": "Zusätzliche ChatterBox-Node-Parameter, z. B. {\"temperature\": 0.55}"
+        }
       }
     },
     "music": {

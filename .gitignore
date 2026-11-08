@@ -13,8 +13,9 @@ video/.work/
 *.mp3
 *.wav
 *.aiff
-!voices/*.wav
-!voices/*.mp3
+# Stimmaufnahmen sind personenbezogen → nicht versionieren
+voices/*
+!voices/.gitkeep
 
 # --- Node / Python ---
 node_modules/

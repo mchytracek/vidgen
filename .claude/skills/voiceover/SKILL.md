@@ -33,9 +33,25 @@ die Rechte hat (eigene Stimme oder lizenziert).
 
 ## Qualität prüfen
 
-- Stichprobe anhören lassen ist unmöglich – stattdessen: Dauer vs. Wortzahl prüfen
-  (Deutsch ≈ 2,3 Wörter/s; stark abweichend → Halluzination/Abbruch, neu erzeugen
-  mit anderem Seed).
-- Ausspracheprobleme (Abkürzungen, Anglizismen): Sprechtext phonetisch umschreiben
-  (`„Ä-Pi-Ai“` statt „API“), nicht den Bildschirmtext.
+`tools/tts.py` prüft jeden Take automatisch und versucht bis zu 8 Seeds:
+
+- **Satzweise Erzeugung** (kurze Sätze < 7 Wörter werden zusammengelegt) – ChatterBox
+  halluziniert bei langen Texten und sehr kurzen Sätzen.
+- **Trimmen:** Stille an Anfang/Ende, kurze Geräusche (Atmer, Klick) nach dem letzten Wort.
+- **Plausibilität:** 1,5–3,6 Wörter/s, keine Pause > 0,9 s.
+- **Vollständigkeit (whisper-cli):** Transkript wird Wort für Wort und in Reihenfolge
+  mit dem Sprechtext verglichen (Kölner Phonetik für Klang-Schreibweisen, Abkürzungen
+  exakt). Ist der Satz vollständig und folgt Gebrabbel, wird hinter dem letzten Wort geschnitten.
+  Ohne Whisper nur Dauerprüfung – dann `vidgen-setup`.
+- „⚠ kein sauberer Take“ → Satz umformulieren (gleiche Aussage, einfacher Satzbau),
+  dann `--only <id> --force`.
+
+Aussprache: **`voice.lexicon`** im Storyboard, gilt nur für die Sprachausgabe
+(Bildschirmtext und Skript bleiben). Bewährt für Deutsch:
+`{"DNS": "Deh-Enn-Ess", "IP-Adresse": "Ih-Peh-Adresse", "Punkt de": "Punkt, Deh-Eh", "Nameserver": "Neim-Server"}`.
+Komposita mit Bindestrich als eigener Eintrag (`IP` trifft `IP-Adresse` nicht).
+`voice.params` setzt Node-Parameter, z. B. `{"temperature": 0.55}` (weniger Abschweifen).
+
+Whisper prüft Vollständigkeit, nicht Klang – den User auf Stellen hinweisen,
+die er anhören soll (Abkürzungen, Fremdwörter, Satzenden).
 - Lautheit wird im Final-Render normalisiert (Skill `video-review`).
