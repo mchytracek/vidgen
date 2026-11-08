@@ -43,7 +43,7 @@ scripts/setup.sh
 Pro Video:
 
 ```bash
-git clone <template-url> wie-dns-funktioniert
+git clone https://github.com/mchytracek/vidgen.git wie-dns-funktioniert
 ```
 
 ```bash

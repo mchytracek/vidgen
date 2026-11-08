@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Macht aus einem frischen Klon des Templates ein eigenes Video-Repo.
 #
-#   git clone <template-url> mein-video && cd mein-video
+#   git clone https://github.com/mchytracek/vidgen.git mein-video && cd mein-video
 #   scripts/init.sh "Wie DNS funktioniert" [--format 9:16] [--compositor hyperframes] [--duration 60]
 #
 # Optionen (zusätzlich zu denen von tools/init_video.py):
