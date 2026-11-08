@@ -10,7 +10,15 @@
     "palette": { "background": "#14213D", "foreground": "#F7F3E9", "accent": "#FF6B5E", "muted": "#8A94A6" },
     "font": "Inter"
   },
-  "voice": { "backend": "say", "sayVoice": "Anna", "reference": null, "language": "German (de)", "seed": 1234 },
+  "voice": {
+    "backend": "comfyui-chatterbox",
+    "reference": "voices/martin_ref.wav",
+    "sayVoice": "Anna",
+    "language": "German (de)",
+    "seed": 2025,
+    "params": { "temperature": 0.55 },
+    "lexicon": { "DNS": "Deh-Enn-Ess", "IP": "Ih-Peh", "IP-Adresse": "Ih-Peh-Adresse", "IP-Adressen": "Ih-Peh-Adressen", "Punkt de": "Punkt, Deh-Eh", "Nameserver": "Neim-Server" }
+  },
   "music": { "enabled": false, "tags": "calm corporate ambient, soft piano, warm pads, instrumental", "bpm": 90, "volume": 0.14, "file": null },
   "compositor": "remotion",
   "scenes": [

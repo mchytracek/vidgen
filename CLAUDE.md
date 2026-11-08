@@ -73,5 +73,5 @@ Story und Storyboard abgenickt haben. Ausnahme: Er sagt ausdrücklich „mach du
 
 - ComfyUI läuft lokal auf `http://127.0.0.1:8188` (Apple Silicon, MPS).
 - Bild: **Z-Image Turbo**. Video: **LTX-2.3** (t2v/i2v). Stimme: **ChatterBox
-  Multilingual** (Custom Node, siehe Setup). Musik: **ACE-Step 1.5** (Modelle optional).
+  Multilingual** mit Standardstimme Martin (`voices/martin_ref.wav`) (Custom Node, siehe Setup). Musik: **ACE-Step 1.5** (Modelle optional).
 - Fallback-Stimme ohne ComfyUI: macOS `say` (nur für Entwürfe).

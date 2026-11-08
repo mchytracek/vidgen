@@ -19,6 +19,11 @@ python3 tools/storyboard.py timing         # Dauern messen & eintragen
 | `comfyui-chatterbox` | gut, Voice-Cloning, 23 Sprachen inkl. Deutsch | Custom Node *ComfyUI_Fill-ChatterBox* + Referenzstimme |
 | `say` | Entwurf / Timing-Test | macOS, Stimme z. B. `Anna` (de) |
 
+**Standardstimme: Martin** – `voices/martin_ref.wav` (16,7 s, −20 LUFS) ist im Template
+enthalten und in `templates/project/storyboard.json` als `voice.reference` gesetzt; jedes neue
+Video nutzt sie automatisch. Nur auf ausdrücklichen Wunsch des Users eine andere Stimme wählen;
+`say` nur als Notlösung, wenn ComfyUI/ChatterBox nicht läuft (dem User sagen).
+
 **Referenzstimme:** `voice.reference` zeigt auf eine Datei in `voices/`
 (10–20 s, sauber, ohne Musik, gleiche Sprache). `tools/tts.py` lädt sie per
 `comfy upload` in ComfyUIs `input/`. Nur Stimmen verwenden, für die der User
