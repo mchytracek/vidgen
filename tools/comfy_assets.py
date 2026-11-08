@@ -13,11 +13,12 @@ from __future__ import annotations
 
 import argparse
 import math
+import re
 import shutil
 import time
 from pathlib import Path
 
-from _common import WORKFLOWS, comfy, die, load_sb, project_dir, save_sb, select_scenes
+from _common import WORKFLOWS, comfy, die, load_sb, project_dir, run, save_sb, select_scenes
 
 # Slot-Zuordnung je Workflow (siehe comfy/workflows/README.md)
 IMAGE = {"file": "image_z_image_turbo.json", "prompt": "57.text", "width": "57.width",
@@ -70,6 +71,20 @@ def store(src: Path, pdir: Path, sub: str, sid: str) -> str:
     dst.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(src, dst)
     return f"{sub}/{dst.name}"
+
+
+def audible_end(path: Path, noise_db: int = -45) -> float | None:
+    """Zeitpunkt, ab dem die Datei bis zum Ende still bleibt (ffmpeg silencedetect); None = durchgehend hörbar."""
+    cp = run(["ffmpeg", "-hide_banner", "-i", str(path), "-af", f"silencedetect=noise={noise_db}dB:d=0.5", "-f", "null", "-"])
+    starts = re.findall(r"silence_start: ([\d.]+)", cp.stderr)
+    ends = re.findall(r"silence_end: ([\d.]+)", cp.stderr)
+    if len(starts) > len(ends):  # letzte Stille reicht bis Dateiende (ffmpeg meldet dann kein Ende)
+        return float(starts[-1])
+    probe = run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(path)])
+    total = float(probe.stdout.strip() or 0)
+    if starts and ends and abs(float(ends[-1]) - total) < 0.05:
+        return float(starts[-1])
+    return None
 
 
 def main():
@@ -134,7 +149,9 @@ def main():
         if m.get("file") and (pdir / "assets" / m["file"]).exists() and not a.force:
             pass
         else:
-            secs = math.ceil((sb.get("totalDuration") or 90) + 2)
+            # ACE-Step komponiert einen Schluss und klingt einige Sekunden vor `seconds` aus –
+            # deshalb großzügig länger erzeugen; der Compositor blendet am Videoende aus.
+            secs = math.ceil((sb.get("totalDuration") or 90) + 12)
             print(f"Musik: ACE-Step ({secs} s)")
             out = run_workflow(pdir, "music", MUSIC, {
                 "tags": m.get("tags") or "calm corporate ambient, soft piano, warm pads, instrumental",
@@ -145,6 +162,13 @@ def main():
                 m["file"] = store(out, pdir, "music", "music")
                 sb["music"] = m
                 save_sb(pdir, sb)
+                end = audible_end(pdir / "assets" / m["file"])
+                need = sb.get("totalDuration") or 0
+                if end is not None and end < need + 1:
+                    print(f"  ⚠ Musik klingt bei {end:.1f} s aus, Video dauert {need:.1f} s – "
+                          f"anderen music.seed probieren und mit --kind music --force neu erzeugen")
+                elif end is not None:
+                    print(f"  Musik hörbar bis {end:.1f} s (Video {need:.1f} s)")
 
     if not a.dry_run:
         from storyboard import sync
