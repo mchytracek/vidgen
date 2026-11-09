@@ -103,7 +103,7 @@
           "duration": { "type": "number", "description": "(auto) Sekunden" },
           "assets": {
             "type": "object",
-            "description": "(auto) Pfade relativ zu assets/",
+            "description": "Pfade relativ zu assets/ – (auto) aus voiceover/comfy_assets; von Hand nur für eigene Medien in screens/ (Screenshots, Bildschirmaufnahmen)",
             "properties": {
               "image": { "type": "string" },
               "clip": { "type": "string" },

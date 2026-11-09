@@ -47,7 +47,7 @@ Story und Storyboard abgenickt haben. Ausnahme: Er sagt ausdrücklich „mach du
    Nach jeder Änderung: `python3 tools/storyboard.py validate`.
 2. **Ton zuerst, dann Bild.** Szenendauern ergeben sich aus der Sprachaufnahme
    (+ Atempause), nicht umgekehrt.
-3. **Lokal-first.** Keine Cloud-/Partner-Modelle (`partner_generate`,
+3. **Lokal-first.** Eigene Rechner (lokal oder im LAN/VPN) ja; keine Cloud-/Partner-Modelle (`partner_generate`,
    `confirm_spend=true`) ohne ausdrückliche Zustimmung des Users.
 4. **ComfyUI nur über `comfy-mcp` oder `tools/comfy_assets.py`** – beide nutzen
    dieselbe Engine (`comfy-cli`). Workflows liegen in `comfy/workflows/`,
@@ -71,7 +71,10 @@ Story und Storyboard abgenickt haben. Ausnahme: Er sagt ausdrücklich „mach du
 
 ## Umgebung (Stand Einrichtung)
 
-- ComfyUI läuft lokal auf `http://127.0.0.1:8188` (Apple Silicon, MPS).
+- ComfyUI läuft standardmäßig lokal auf `http://127.0.0.1:8188` (Apple Silicon, MPS).
+  Anderer Rechner: `scripts/init.sh --comfy-url http://host:8188` bzw. `.vidgen.env`
+  (Details: Skill `comfyui`, „Entfernter ComfyUI-Server“). Aktive Adresse:
+  `python3 tools/_common.py comfy-url`.
 - Bild: **Z-Image Turbo**. Video: **LTX-2.3** (t2v/i2v). Stimme: **ChatterBox
   Multilingual** mit Standardstimme Martin (`~/.config/vidgen/voices/martin_ref.wav`, nicht im Repo) (Custom Node, siehe Setup). Musik: **ACE-Step 1.5** (Modelle optional).
 - Fallback-Stimme ohne ComfyUI: macOS `say` (nur für Entwürfe).

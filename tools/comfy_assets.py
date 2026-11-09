@@ -18,7 +18,7 @@ import shutil
 import time
 from pathlib import Path
 
-from _common import WORKFLOWS, comfy, die, load_sb, project_dir, run, save_sb, select_scenes
+from _common import WORKFLOWS, comfy, comfy_output, die, load_sb, project_dir, run, save_sb, select_scenes
 
 # Slot-Zuordnung je Workflow (siehe comfy/workflows/README.md)
 IMAGE = {"file": "image_z_image_turbo.json", "prompt": "57.text", "width": "57.width",
@@ -63,7 +63,7 @@ def run_workflow(pdir: Path, name: str, spec: dict, overrides: dict, timeout: in
     if not outs:
         die(f"{name}: keine Ausgabedatei gemeldet")
     print(f"  ✔ {name} in {time.time() - t0:.0f} s")
-    return Path(outs[0])
+    return comfy_output(outs[0], pdir)
 
 
 def store(src: Path, pdir: Path, sub: str, sid: str) -> str:

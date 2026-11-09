@@ -32,8 +32,14 @@ Vorlage aus `templates/project/remotion/` (kopiert `scripts/init.sh`). Aufbau:
 - `src/Explainer.tsx` – legt Szenen als `<Sequence>` hintereinander, Audio je Szene,
   Musik global.
 - `src/scenes/*.tsx` – eine Komponente je `visual.component`
-  (`TitleCard`, `ImageKenBurns`, `ClipScene`, `BulletList`, `BigNumber`, `ImageWithCaption`).
-  Neue Szenentypen hier anlegen und in `src/scenes/index.ts` registrieren.
+  (`TitleCard`, `ImageKenBurns`, `ClipScene`, `BulletList`, `BigNumber`, `ImageWithCaption`,
+  `ScreenshotFocus`). Neue Szenentypen hier anlegen und in `src/scenes/index.ts` registrieren.
+- `ScreenshotFocus` – eigener Produkt-Screenshot (`assets/screens/`) mit Kamerafahrt
+  auf `props.focus`, Rahmen/Spotlight, Cursor mit Klick, Schritt-Badge. Props-Referenz
+  im Kopfkommentar der Datei und im Skill `storyboard`. Fokus-Positionen prüfen:
+  `python3 tools/screens.py stills [--only s03]` → `review/screens/<id>_focus<n>.png`
+  ansehen; sitzt ein Rahmen daneben, Koordinaten im **Storyboard** korrigieren
+  (nicht im Code) und Still erneut rendern.
 
 ```bash
 cd video/remotion && npm install                      # einmalig (macht init.sh)

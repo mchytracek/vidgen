@@ -21,7 +21,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from _common import (VOICE_HOME, WORKFLOWS, comfy, die, load_sb, project_dir, run, save_sb,
+from _common import (VOICE_HOME, WORKFLOWS, comfy, comfy_output, die, load_sb, project_dir, run, save_sb,
                      select_scenes, voice_file)
 
 # Slots nach Installation von ComfyUI_Fill-ChatterBox mit list_workflow_slots verifizieren!
@@ -368,7 +368,7 @@ def chatterbox_once(pdir: Path, sb: dict, key: str, text: str, ref_name: str | N
     env = comfy("run", "--workflow", str(work), "--wait", "--timeout", "900", timeout=960)
     if not env["ok"] or (env.get("data") or {}).get("status") != "completed":
         die(f"TTS {key} fehlgeschlagen: {env.get('error') or env.get('data')}")
-    return Path(env["data"]["outputs"][0])
+    return comfy_output(env["data"]["outputs"][0], pdir)
 
 
 def with_scene_voice(sb: dict, s: dict) -> dict:

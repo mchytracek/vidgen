@@ -48,7 +48,7 @@ def main():
     shutil.copytree(tpl, VIDEO, ignore=shutil.ignore_patterns("remotion", "node_modules"))
     if a.compositor == "remotion":
         shutil.copytree(tpl / "remotion", VIDEO / "remotion", ignore=shutil.ignore_patterns("node_modules"))
-    for d in ("assets/images", "assets/clips", "assets/audio", "assets/music", "renders", "review"):
+    for d in ("assets/images", "assets/clips", "assets/audio", "assets/music", "assets/screens", "renders", "review"):
         (VIDEO / d).mkdir(parents=True, exist_ok=True)
 
     sbf = VIDEO / "storyboard.json"

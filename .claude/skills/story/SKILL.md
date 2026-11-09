@@ -29,6 +29,22 @@ Eingabe: `video/brief.md`. Ausgabe: `video/story.md`.
 6. **Visuelle Idee je Szene** in einem Halbsatz – *zeigen statt sagen*: Was sieht man,
    das der Text nicht sagt? (Diagramm, Metapher, Vergleich, Zahl groß.)
 
+## Produktvideo mit eigenen Screenshots
+
+Liegen Screenshots in `video/assets/screens/`, folgt die Story dem **echten
+Ablauf im Produkt**:
+
+- Bogen *Problem → Lösung → Nutzen → Handlung*; der Lösungsteil ist der Klickpfad.
+  Rahmen (Hook, Nutzen, CTA) knapp halten – der Prozess ist der Kern.
+- **Ein Schritt = ein Gedanke = eine Szene.** Mehrere Aktionen auf demselben
+  Bildschirm dürfen eine Szene teilen (mehrere Fokuspunkte), aber nie mehr als drei.
+- UI-Beschriftungen **wörtlich** nennen („Klick auf ‚Neue Rechnung‘“) – das, was man
+  hört, muss man im Bild finden. Nur nennen, was im Screenshot tatsächlich sichtbar ist.
+- Nicht jede Mausbewegung erzählen: Was tut der Nutzer, und **warum**? („Wähl den
+  Kunden – Adresse und Zahlungsziel übernimmt das System.“)
+- In der Spalte „Visuelle Idee“ den Dateinamen und den Fokus nennen:
+  `02-dashboard.png – Button „Neue Rechnung“ oben rechts`.
+
 ## Format von `story.md`
 
 ```markdown

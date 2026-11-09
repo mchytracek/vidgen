@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "comfy-mcp": {
-      "command": "comfy-mcp",
+      "command": "scripts/comfy-mcp.sh",
       "args": [],
       "env": {
         "COMFY_MCP_DEBUG_LOG": "0"

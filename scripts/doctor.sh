@@ -2,7 +2,9 @@
 # Prüft alle Komponenten der lokalen Videoproduktion. Ändert nichts.
 set -u
 cd "$(dirname "$0")/.."
-COMFY_URL="${COMFYUI_URL:-http://127.0.0.1:8188}"
+COMFY_URL=$(python3 tools/_common.py comfy-url 2>/dev/null || echo "http://127.0.0.1:8188")
+export COMFY_LOCAL_URL="$COMFY_URL"   # comfy-cli-Aufrufe unten gegen denselben Server
+case "$COMFY_URL" in http://127.*|http://localhost*|http://\[::1\]*) REMOTE=0 ;; *) REMOTE=1 ;; esac
 ok()   { printf "  \033[32m✔\033[0m %s\n" "$*"; }
 warn() { printf "  \033[33m⚠\033[0m %s\n" "$*"; }
 bad()  { printf "  \033[31m✖\033[0m %s\n" "$*"; }
@@ -26,13 +28,17 @@ if [ -n "$VOICE_REF" ]; then
 fi
 
 echo "ComfyUI"
+[ "$REMOTE" = 1 ] && ok "entfernter Server: $COMFY_URL (aus .vidgen.env / ~/.config/vidgen/env / \$COMFYUI_URL)"
 if stats=$(curl -s -m 3 "$COMFY_URL/system_stats"); then
   ver=$(printf '%s' "$stats" | python3 -c 'import json,sys;print(json.load(sys.stdin)["system"]["comfyui_version"])' 2>/dev/null)
   [ -n "$ver" ] && ok "läuft auf $COMFY_URL (v$ver)" || bad "$COMFY_URL antwortet, aber nicht wie ComfyUI"
 else
-  bad "nicht erreichbar auf $COMFY_URL – ComfyUI starten"
+  if [ "$REMOTE" = 1 ]; then bad "nicht erreichbar auf $COMFY_URL – ComfyUI dort mit --listen 0.0.0.0 starten, Firewall/VPN prüfen"
+  else bad "nicht erreichbar auf $COMFY_URL – ComfyUI starten"; fi
 fi
-if command -v comfy >/dev/null; then
+if command -v comfy >/dev/null && [ "$REMOTE" = 1 ]; then
+  ok "comfy-cli $(comfy --version 2>/dev/null | python3 -c 'import json,sys;print(json.load(sys.stdin)["version"])' 2>/dev/null) (lokaler Workspace nicht nötig)"
+elif command -v comfy >/dev/null; then
   ws=$(comfy --json which 2>/dev/null | python3 -c 'import json,sys;print(json.load(sys.stdin)["data"]["workspace_path"])' 2>/dev/null)
   [ -d "$ws" ] && ok "comfy-cli → $ws" || bad "comfy-cli zeigt auf '$ws' (existiert nicht) → comfy set-default <pfad>"
 else

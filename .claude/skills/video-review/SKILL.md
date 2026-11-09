@@ -26,6 +26,11 @@ Alle Bilder mit `Read` ansehen. Alternativ MCP `preview_media` für einzelne Cli
 4. **Artefakte:** KI-Fehler (Hände, Pseudotext im Bild, verzerrte Objekte) → Szene mit
    neuem Seed/Prompt neu erzeugen.
 5. **Timing:** Bildwechsel passen zu Satzenden; keine Szene < 2,5 s.
+   Screenshot-Szenen: Fokus/Klick kommt, wenn das Element genannt wird (`focus.at`).
+5a. **Screenshots** (`ScreenshotFocus`): Rahmen sitzt exakt auf dem genannten
+   Element, Zoom zeigt keinen leeren Rand, UI-Text im Zoom scharf, keine echten
+   Kundendaten/Namen/E-Mails sichtbar, genannte Beschriftung = sichtbare Beschriftung.
+   Detailprüfung: `python3 tools/screens.py stills`.
 6. **Ton:** Lautheit Ziel −16 LUFS (Web) – `report.md` nennt den Messwert;
    `tools/review.py --normalize` erzeugt `renders/final_norm.mp4`.
 

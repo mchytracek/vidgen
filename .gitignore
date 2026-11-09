@@ -35,5 +35,6 @@ skills-lock.json
 
 # --- lokal ---
 .claude/settings.local.json
+.vidgen.env
 .DS_Store
 .env

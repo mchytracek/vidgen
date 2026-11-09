@@ -22,6 +22,7 @@ if [[ "$want" == all || "$want" == --mcp ]]; then
   fi
   echo "comfy-cli Workspace: $(comfy --json which | python3 -c 'import json,sys;print(json.load(sys.stdin)["data"]["workspace_path"])')"
   echo "  (falsch? → COMFYUI_PATH=/pfad/zu/ComfyUI scripts/setup.sh --mcp)"
+  echo "  ComfyUI auf anderem Rechner? Lokale Installation nicht nötig – scripts/init.sh --comfy-url http://host:8188"
 fi
 
 if [[ "$want" == all || "$want" == --skills ]]; then

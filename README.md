@@ -52,8 +52,9 @@ cd wie-dns-funktioniert && scripts/init.sh "Wie DNS funktioniert" --duration 60
 
 `init.sh` legt `video/` an, benennt `origin` in `template` um (damit du später
 Updates holen und ein eigenes Remote anlegen kannst), committet und installiert
-Remotion. Optionen: `--format 9:16`, `--compositor hyperframes|tesseract`,
-`--keep-origin`, `--no-install`, `--no-commit`.
+Remotion. Außerdem fragt es nach dem ComfyUI-Server (Enter = lokal bzw. zuletzt
+gewählte Adresse). Optionen: `--format 9:16`, `--compositor hyperframes|tesseract`,
+`--comfy-url http://host:8188`, `--keep-origin`, `--no-install`, `--no-commit`.
 
 Dann Claude Code im Ordner starten:
 
@@ -83,11 +84,150 @@ scripts/doctor.sh
 > **Hinweis:** Verbesserst du Skills oder Tools in einem Video-Klon, übertrage sie
 > ins Template-Repo – sonst profitieren künftige Videos nicht davon.
 
+## ComfyUI auf einem anderen Rechner
+
+ComfyUI muss nicht auf dem Mac laufen, auf dem Claude Code arbeitet – z. B. auf einer
+GPU-Workstation im LAN oder per VPN. Default bleibt `http://127.0.0.1:8188`.
+
+**Auf dem Server:** ComfyUI so starten, dass es von außen erreichbar ist, und die
+Modelle/Custom Nodes aus [Voraussetzungen](#voraussetzungen) dort installieren:
+
+```bash
+python main.py --listen 0.0.0.0 --port 8188
+```
+
+**Im Video-Repo:** Adresse bei `init.sh` angeben (oder bei der Abfrage eintippen):
+
+```bash
+scripts/init.sh "Wie DNS funktioniert" --comfy-url http://gpu-box:8188
+```
+
+Das schreibt `.vidgen.env` (git-ignoriert, gilt für diesen Klon) und merkt sich die
+Adresse in `~/.config/vidgen/env` als Vorschlag für die nächsten Videos. Nachträglich
+ändern: `.vidgen.env` editieren und Claude Code neu starten. Reihenfolge:
+`$COMFYUI_URL` > `.vidgen.env` > `~/.config/vidgen/env` > lokal.
+
+```bash
+python3 tools/_common.py comfy-url    # aktive Adresse
+scripts/doctor.sh                     # erreichbar? Workflows auf dem Server lauffähig?
+```
+
+Was sich ändert: `comfy-mcp` wird über `scripts/comfy-mcp.sh` mit der Adresse
+gestartet, die Python-Tools geben sie an `comfy-cli` weiter. Eingaben
+(Startbilder, Referenzstimme) werden hochgeladen, Ergebnisse per HTTP nach
+`video/.work/comfy_out/` geladen. Eine lokale ComfyUI-Installation ist dann nicht
+nötig, `comfy-cli` und `comfy-mcp` schon.
+
+Grenzen:
+
+- Nur `http://host:port` ohne Pfad und ohne TLS (Grenze von comfy-cli/comfy-mcp).
+  ComfyUI hat keine Anmeldung – **nicht ins offene Internet stellen**; über VPN
+  (z. B. Tailscale) oder SSH-Tunnel (`ssh -L 8188:127.0.0.1:8188 gpu-box`, dann
+  lokale Adresse lassen) zugreifen.
+- Modelle und Custom Nodes werden auf dem Server installiert; `download_model` /
+  `install_node` aus Claude wirken auf den Mac.
+
+## Produktvideo mit eigenen Screenshots
+
+Soll ein Video einen echten Ablauf im Produkt zeigen (z. B. „In 5 Schritten zur
+ersten Rechnung“), kommen die Bilder nicht aus ComfyUI, sondern aus deinen
+Screenshots. ComfyUI liefert dann nur noch Stimme, Musik und ggf. einzelne
+Stimmungsbilder (Intro, Outro).
+
+**1. Screenshots aufnehmen** – einen pro Prozessschritt, in Ablaufreihenfolge:
+
+- Fenster möglichst im Zielformat aufnehmen (16:9, z. B. Browser auf 1920×1080,
+  bzw. hochkant für `--format 9:16`). Andere Seitenverhältnisse gehen auch – der
+  Screenshot wird dann gerahmt mit Rand gezeigt.
+- Demo-Daten statt echter Kundendaten, Benachrichtigungen aus, gleicher
+  Zoom/Theme in allen Aufnahmen, Mauszeiger möglichst ausblenden.
+- PNG, sprechend benannt: `01-login.png`, `02-dashboard.png`, …
+
+**2. Ablegen und prüfen** in `video/assets/screens/` (legt `init.sh` an). Der
+Ordner ist – anders als `assets/images/` – nicht git-ignoriert: Screenshots sind
+nicht reproduzierbar und werden mit dem Video versioniert.
+
+```bash
+cp ~/Desktop/Screens/*.png video/assets/screens/
+```
+
+```bash
+python3 tools/screens.py check     # Größe/Seitenverhältnis, Zuordnung zu Szenen
+```
+
+**3. Claude Bescheid geben:**
+
+> /explainer Produktvideo, 90 Sekunden: wie man in MeinProdukt eine Rechnung
+> erstellt. Die Screenshots der Schritte liegen in video/assets/screens/.
+
+Die Skills erkennen ein Screenshot-Video: Claude sieht sich jeden Screenshot an,
+hält im Brief fest, was darauf zu sehen ist, baut die Story entlang der Schritte
+(UI-Beschriftungen wörtlich im Sprechtext) und plant pro Schritt eine Szene mit
+der Komponente **`ScreenshotFocus`**:
+
+```json
+{
+  "id": "s03",
+  "beat": "Schritt 2: Kunde wählen",
+  "narration": "Klick auf „Neue Rechnung“ und wähl den Kunden aus.",
+  "visual": {
+    "kind": "code",
+    "component": "ScreenshotFocus",
+    "props": {
+      "step": 2, "steps": 5,
+      "focus": [
+        { "x": 0.78, "y": 0.06, "w": 0.16, "h": 0.06, "label": "Neue Rechnung" },
+        { "x": 0.30, "y": 0.32, "w": 0.40, "h": 0.08, "label": "Kunde wählen", "at": 2.8 }
+      ]
+    }
+  },
+  "assets": { "image": "screens/02-dashboard.png" }
+}
+```
+
+`ScreenshotFocus` zeigt den Screenshot gerahmt auf dem Palettenhintergrund, fährt
+die Kamera auf jeden Fokus, markiert ihn (`highlight`: `box`, `spotlight` oder
+`none`), lässt einen Mauszeiger hinfahren und klicken (`cursor: false` schaltet
+das ab) und blendet ein Schritt-Badge („2/5“) und die Bauchbinde (`label`) ein.
+`focus` sind Anteile (0–1) der Bildbreite/-höhe, Ursprung oben links; `at` ist
+die Startzeit in Sekunden innerhalb der Szene. Alle Props stehen im Kopfkommentar
+von `templates/project/remotion/src/scenes/ScreenshotFocus.tsx`.
+
+`kind: "code"` sorgt dafür, dass `tools/comfy_assets.py` für diese Szene nichts
+generiert; der Pfad in `assets.image` ist relativ zu `video/assets/`.
+`storyboard.py validate` prüft, dass Bild und Fokus-Rechtecke gültig sind.
+
+**4. Fokus-Positionen treffen.** Die Koordinaten liest Claude aus Rasterkopien
+ab, statt sie zu schätzen, und prüft danach das Ergebnis als Einzelbild:
+
+```bash
+python3 tools/screens.py grid                # → video/review/screens/*_grid.png (Raster 5/10/50 %)
+```
+
+```bash
+python3 tools/screens.py stills --only s03   # → video/review/screens/s03_focus1.png …
+```
+
+Sitzt ein Rahmen daneben, wird die Koordinate im Storyboard korrigiert, nicht im Code.
+
+**Tipps**
+
+- Ein Schritt = eine Szene. Mehrere Klicks auf demselben Bildschirm → mehrere
+  Einträge in `focus` (max. 3) oder dieselbe Datei in mehreren Szenen.
+- Bildschirmaufnahmen als Video gehen auch: `kind: "code"`,
+  `component: "ClipScene"`, `assets.clip: "screens/03-export.mp4"`
+  (nicht `kind: "clip"` – dann würde ComfyUI ein Startbild generieren;
+  `*.mp4` ist global git-ignoriert, also separat sichern).
+- Screenshots **nicht** per LTX (i2v) animieren lassen – das Modell verzerrt
+  UI-Text und Layout. Bewegung kommt aus dem Szenen-Code.
+- Screenshots mindestens in Videobreite aufnehmen (bei 16:9 ≥ 1700 px breit),
+  sonst wird der Zoom unscharf; Retina-Aufnahmen sind ideal.
+
 ## Voraussetzungen
 
 | Komponente | Zweck |
 |------------|-------|
-| ComfyUI (lokal, Port 8188) | Bild/Video/Audio-Generierung |
+| ComfyUI (lokal oder auf anderem Rechner, Port 8188) | Bild/Video/Audio-Generierung |
 | `comfy-cli` + `comfy-mcp` | Steuerung von ComfyUI durch Claude (MCP) und Skripte |
 | Modelle: Z-Image Turbo, LTX-2.3 | Bilder, Clips (✅ vorhanden) |
 | Custom Node *ComfyUI_Fill-ChatterBox* | deutsche Stimme mit Voice-Cloning (optional; Fallback macOS `say`) |
@@ -104,8 +244,8 @@ comfy/workflows/          geprüfte ComfyUI-Workflows + Slot-Referenz (README.md
 schemas/                  storyboard.schema.json – Datenvertrag aller Phasen
 templates/project/        Vorlage für video/ inkl. Remotion-Gerüst (rendert direkt aus storyboard.json)
 templates/claude-settings.json  empfohlene Permissions (→ .claude/settings.json kopieren)
-tools/                    Python-Helfer (nur Stdlib): init_video, storyboard, comfy_assets, tts, review
-scripts/                  init.sh, update-template.sh, setup.sh, doctor.sh
+tools/                    Python-Helfer (nur Stdlib): init_video, storyboard, comfy_assets, tts, review, screens
+scripts/                  init.sh, update-template.sh, setup.sh, doctor.sh, comfy-mcp.sh (MCP-Start mit ComfyUI-Adresse)
 video/                    entsteht erst durch init.sh – das Video dieses Klons
 voices/                   Referenzstimmen für Voice-Cloning (nur mit Rechten!, git-ignoriert);
                           projektübergreifend: ~/.config/vidgen/voices/ (Standard: martin_ref.wav)

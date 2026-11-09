@@ -6,7 +6,9 @@ description: Steuert das lokale ComfyUI über den MCP-Server comfy-mcp – Bilde
 # ComfyUI über MCP
 
 Alle Werkzeuge kommen vom MCP-Server **`comfy-mcp`** (Comfy-Org, baut auf `comfy-cli`).
-Er spricht mit dem lokalen ComfyUI auf `127.0.0.1:8188`. Workflows und ihre
+Er spricht mit dem ComfyUI, das für dieses Repo konfiguriert ist – Default lokal
+`127.0.0.1:8188`, sonst ein anderer Rechner (siehe „Entfernter ComfyUI-Server“ unten).
+Workflows und ihre
 Slot-Adressen: `comfy/workflows/README.md` – **vor dem ersten Lauf lesen.**
 
 ## Standard-Ablauf für ein Asset
@@ -74,3 +76,27 @@ Ausgaben des Compositors werden auf Zielauflösung skaliert (Bilder `cover`).
 **Nie ohne Zustimmung:** `partner_generate`, `confirm_spend=true`, `install_node`,
 `download_model`, `update_comfyui`, `restart_comfyui`.
 Neue Workflows: Ablauf in `comfy/workflows/README.md` („Neue Workflows hinzufügen“).
+
+## Entfernter ComfyUI-Server
+
+Die Adresse kommt aus `$COMFYUI_URL` > `.vidgen.env` (pro Klon, von `scripts/init.sh`,
+git-ignoriert) > `~/.config/vidgen/env` > `http://127.0.0.1:8188`;
+`python3 tools/_common.py comfy-url` zeigt die aktive. `scripts/comfy-mcp.sh` startet
+comfy-mcp damit (`COMFYUI_URL`), die Python-Tools geben sie als `COMFY_LOCAL_URL` an comfy-cli.
+
+- `server_info` zeigt dann einen `comfy_target`-Block mit dem Host. **Hardware-Angaben
+  in `server_info` beschreiben diesen Mac, nicht den GPU-Rechner** – Speicher-/Dauer-
+  Abschätzungen nicht daraus ableiten, im Zweifel den User fragen.
+- Ausgaben liegen auf dem anderen Rechner: immer `fetch_outputs(prompt_id, out_dir=…)`
+  benutzen (lädt per HTTP), nie Pfade im ComfyUI-Ordner annehmen. Die Tools
+  (`comfy_assets.py`, `tts.py`) laden `/view`-URLs automatisch nach `video/.work/comfy_out/`.
+- Eingaben (Startbilder, Referenzstimme) gehen per `upload_file` / `comfy upload` – das
+  funktioniert remote unverändert.
+- `download_model`, `install_node`, `restart_comfyui`, `update_comfyui` wirken auf
+  **diesen** Rechner, nicht auf den Server – Modelle/Custom Nodes auf dem Server selbst
+  installieren (User bitten) und danach `validate_workflow` erneut prüfen.
+- Nur `http://host:port` ohne Pfad/TLS (Grenze von comfy-cli/comfy-mcp). Für Zugriff von
+  außen VPN/Tailscale oder SSH-Tunnel (`ssh -L 8188:127.0.0.1:8188 gpu-box`, dann lokal lassen).
+- Ein eigener Rechner im LAN/VPN ist **kein** Cloud-Dienst – Regel „Lokal-first“ bleibt
+  erfüllt; Partner-/Cloud-Modelle brauchen weiterhin ausdrückliche Zustimmung.
+

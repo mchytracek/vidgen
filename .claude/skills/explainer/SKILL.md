@@ -17,7 +17,9 @@ liegt in `video/`.
 
 - `video/` fehlt → Repo ist noch nicht initialisiert. Titel (und ggf. Format,
   Compositor, Länge) erfragen bzw. aus der Anfrage ableiten, dann
-  `scripts/init.sh "<Titel>" [--format 16:9|9:16|1:1] [--compositor remotion|hyperframes|tesseract] [--duration 60]`.
+  `scripts/init.sh "<Titel>" [--format 16:9|9:16|1:1] [--compositor remotion|hyperframes|tesseract] [--duration 60] [--comfy-url http://host:8188]`.
+  `--comfy-url` nur, wenn der User einen anderen ComfyUI-Rechner nennt; sonst gilt die
+  zuletzt gewählte Adresse bzw. lokal. Nach einer Adressänderung Claude Code neu starten.
   Das legt `video/` an, benennt `origin` in `template` um, committet und installiert Remotion.
 - `video/` existiert → `python3 tools/storyboard.py show` zeigt Status und Szenen;
   beim ersten nicht erledigten Schritt weitermachen.
@@ -35,6 +37,17 @@ Pflichtinhalte/Quellen · Branding (Farben, Logo, Schrift).
 Was der User schon gesagt hat, nicht erneut fragen. Sinnvolle Defaults setzen
 und im Brief als „Annahme“ markieren. → **Gate:** Brief kurz zusammenfassen, bestätigen lassen.
 
+**Eigene Screenshots (Produktvideo):** Liegen Dateien in `video/assets/screens/`
+oder nennt der User Screenshots/Bildschirmaufnahmen seines Produkts, ist es ein
+**Screenshot-Video**: Die Bilder des Ablaufs kommen von dort, nicht aus ComfyUI.
+Dann `python3 tools/screens.py check` ausführen, **jeden Screenshot mit `Read`
+ansehen** und im Brief festhalten: Liste der Screenshots in Ablaufreihenfolge mit
+je einem Satz, was zu sehen ist (Bildschirm, relevante Buttons/Felder mit
+wörtlicher Beschriftung). Fehlende Schritte im Ablauf beim User nachfordern statt
+sie zu generieren. Format-Warnungen von `check` ansprechen (anderes
+Seitenverhältnis → `framed: true` bleibt Default; zu klein → neu aufnehmen).
+ComfyUI liefert dann nur Stimme, Musik und ggf. Stimmungsbilder (Intro/Outro).
+
 ## 2. Story → `story.md` (Skill `story`)
 ## 3. Storyboard → `storyboard.json` (Skill `storyboard`) → **Gate**
 
@@ -50,6 +63,9 @@ Sprechtexte vertonen, echte Dauern ins Storyboard schreiben
 
 Erst **eine** Probe-Szene erzeugen und dem User zeigen (Stil-Check), dann den Rest
 im Batch: `python3 tools/comfy_assets.py`. Optional Musik.
+Screenshot-Szenen (`kind: "code"`) überspringt `comfy_assets.py` automatisch.
+Bei Screenshot-Videos ist der Stil-Check stattdessen ein Fokus-Check:
+`python3 tools/screens.py stills --only <id>` und das Ergebnis ansehen.
 
 ## 6. Szenen-Code (Skill `scene-coding`)
 

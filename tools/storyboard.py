@@ -58,6 +58,26 @@ def validate(sb: dict) -> list[str]:
             errs.append(f"{where}: visual.motionPrompt fehlt für kind=clip")
         if kind == "code" and not v.get("component"):
             errs.append(f"{where}: visual.component fehlt für kind=code")
+        if v.get("component") == "ScreenshotFocus":
+            errs += _check_screenshot(s, where, kind)
+    return errs
+
+
+def _check_screenshot(s: dict, where: str, kind) -> list[str]:
+    errs = []
+    if kind != "code":
+        errs.append(f"{where}: ScreenshotFocus braucht kind=code (sonst generiert ComfyUI ein Bild)")
+    if not (s.get("assets") or {}).get("image"):
+        errs.append(f"{where}: ScreenshotFocus braucht assets.image (z. B. \"screens/01-login.png\")")
+    foci = (s["visual"].get("props") or {}).get("focus") or []
+    for i, f in enumerate(foci if isinstance(foci, list) else [foci]):
+        try:
+            x, y, w, h = (float(f[k]) for k in ("x", "y", "w", "h"))
+        except (KeyError, TypeError, ValueError):
+            errs.append(f"{where}: focus[{i}] braucht x, y, w, h (Anteile 0–1)")
+            continue
+        if min(x, y) < 0 or w <= 0 or h <= 0 or x + w > 1.001 or y + h > 1.001:
+            errs.append(f"{where}: focus[{i}] liegt außerhalb des Bildes (Anteile 0–1, x+w ≤ 1, y+h ≤ 1)")
     return errs
 
 
