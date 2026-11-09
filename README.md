@@ -107,7 +107,8 @@ templates/claude-settings.json  empfohlene Permissions (→ .claude/settings.jso
 tools/                    Python-Helfer (nur Stdlib): init_video, storyboard, comfy_assets, tts, review
 scripts/                  init.sh, update-template.sh, setup.sh, doctor.sh
 video/                    entsteht erst durch init.sh – das Video dieses Klons
-voices/                   Referenzstimmen für Voice-Cloning (nur mit Rechten!); martin_ref.wav = Standard
+voices/                   Referenzstimmen für Voice-Cloning (nur mit Rechten!, git-ignoriert);
+                          projektübergreifend: ~/.config/vidgen/voices/ (Standard: martin_ref.wav)
 ```
 
 ### Skills

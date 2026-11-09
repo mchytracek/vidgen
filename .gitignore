@@ -16,8 +16,6 @@ video/.work/
 # Stimmaufnahmen sind personenbezogen → nicht versionieren
 voices/*
 !voices/.gitkeep
-# Hausstimme des Templates (Rechte geklärt, Repo privat)
-!voices/martin_ref.wav
 
 # --- Node / Python ---
 node_modules/

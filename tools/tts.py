@@ -21,7 +21,8 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from _common import REPO, WORKFLOWS, comfy, die, load_sb, project_dir, run, save_sb, select_scenes
+from _common import (VOICE_HOME, WORKFLOWS, comfy, die, load_sb, project_dir, run, save_sb,
+                     select_scenes, voice_file)
 
 # Slots nach Installation von ComfyUI_Fill-ChatterBox mit list_workflow_slots verifizieren!
 CHATTERBOX = {"file": "audio-chatterbox_tts_multilingual.json", "voice": "2.audio",
@@ -494,9 +495,11 @@ def main():
     if backend == "comfyui-chatterbox":
         ref = voice.get("reference")
         if ref:  # ohne Referenz: eingebaute ChatterBox-Stimme
-            if not (REPO / ref).is_file():
-                die(f"voice.reference nicht gefunden: {ref}")
-            env = comfy("upload", str(REPO / ref), "--overwrite")
+            ref_path = voice_file(ref)
+            if not ref_path:
+                die(f"voice.reference nicht gefunden: {ref} – weder im Repo noch in {VOICE_HOME}/ "
+                    f"(Referenzstimmen werden nicht versioniert, Datei dort ablegen)")
+            env = comfy("upload", str(ref_path), "--overwrite")
             if not env["ok"]:
                 die(f"Upload Referenzstimme: {env['error']}")
             ref_name = Path(ref).name

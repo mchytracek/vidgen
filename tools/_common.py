@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -11,6 +12,8 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 VIDEO = REPO / "video"
 WORKFLOWS = REPO / "comfy" / "workflows"
+# Referenzstimmen außerhalb des Repos (personenbezogen → nie versionieren)
+VOICE_HOME = Path(os.environ.get("VIDGEN_VOICES", "~/.config/vidgen/voices")).expanduser()
 
 
 def die(msg: str, code: int = 1) -> None:
@@ -26,6 +29,14 @@ def project_dir(arg: str | None = None) -> Path:
     if not (p / "storyboard.json").exists():
         die(f"Kein storyboard.json in {p} – erst `scripts/init.sh \"<Titel>\"` ausführen")
     return p.resolve()
+
+
+def voice_file(ref: str) -> Path | None:
+    """Referenzstimme finden: erst im Repo (voices/…), dann in VOICE_HOME (~/.config/vidgen/voices)."""
+    for cand in (REPO / ref, VOICE_HOME / Path(ref).name):
+        if cand.is_file():
+            return cand
+    return None
 
 
 def load_sb(pdir: Path) -> dict:

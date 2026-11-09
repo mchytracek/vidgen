@@ -18,6 +18,13 @@ WHISPER_MODEL="${VIDGEN_WHISPER_MODEL:-$HOME/.local/share/whisper-cpp/ggml-large
 if command -v whisper-cli >/dev/null && [ -f "$WHISPER_MODEL" ]; then ok "whisper-cli + Modell (Sprachprüfung)"
 else warn "whisper-cli/Modell fehlt → Vollständigkeit der Sprachaufnahmen ungeprüft (siehe vidgen-setup)"; fi
 
+VOICE_REF=$(python3 -c 'import json;print(json.load(open("templates/project/storyboard.json"))["voice"].get("reference") or "")' 2>/dev/null)
+if [ -n "$VOICE_REF" ]; then
+  VOICE_HOME="${VIDGEN_VOICES:-$HOME/.config/vidgen/voices}"
+  if [ -f "$VOICE_REF" ] || [ -f "$VOICE_HOME/$(basename "$VOICE_REF")" ]; then ok "Standardstimme $(basename "$VOICE_REF")"
+  else warn "Standardstimme $(basename "$VOICE_REF") fehlt → nach $VOICE_HOME/ kopieren (nicht im Repo)"; fi
+fi
+
 echo "ComfyUI"
 if stats=$(curl -s -m 3 "$COMFY_URL/system_stats"); then
   ver=$(printf '%s' "$stats" | python3 -c 'import json,sys;print(json.load(sys.stdin)["system"]["comfyui_version"])' 2>/dev/null)
