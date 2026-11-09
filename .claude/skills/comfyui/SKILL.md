@@ -92,6 +92,13 @@ comfy-mcp damit (`COMFYUI_URL`), die Python-Tools geben sie als `COMFY_LOCAL_URL
   (`comfy_assets.py`, `tts.py`) laden `/view`-URLs automatisch nach `video/.work/comfy_out/`.
 - Eingaben (Startbilder, Referenzstimme) gehen per `upload_file` / `comfy upload` – das
   funktioniert remote unverändert.
+- **object_info (comfy-cli ≥ 1.13):** `comfy workflow set-slot|slots` und `comfy validate`
+  laden object_info im lokalen Modus nur von Loopback-Adressen (SSRF-Schutz, Fehler
+  „Refusing to fetch object_info from non-loopback host“). `tools/_common.py` holt es deshalb
+  selbst vom konfigurierten Server und übergibt es per `--input` – `tts.py`/`comfy_assets.py`
+  laufen remote ohne Tunnel. Von Hand: `curl -o /tmp/oi.json $URL/object_info`, dann
+  `--input /tmp/oi.json`. MCP-Werkzeuge mit Slot-/Validierungszugriff können remote an
+  derselben Sperre scheitern – dann die Python-Tools bzw. comfy-cli mit `--input` nehmen.
 - `download_model`, `install_node`, `restart_comfyui`, `update_comfyui` wirken auf
   **diesen** Rechner, nicht auf den Server – Modelle/Custom Nodes auf dem Server selbst
   installieren (User bitten) und danach `validate_workflow` erneut prüfen.

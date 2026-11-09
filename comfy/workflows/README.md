@@ -6,7 +6,7 @@ Offizielle ComfyUI-Vorlagen (per `comfy templates fetch` geholt), im UI-Format.
 Aktuelle Slots jederzeit nachsehen: MCP `list_workflow_slots` bzw.
 `comfy --json workflow slots <datei>`.
 
-Status geprüft am 2026-11-08 gegen die lokale Installation (`comfy workflow validate`).
+Status geprüft am 2026-11-09 mit `comfy validate --input <object_info.json>` (comfy-cli 1.13, `scripts/doctor.sh`).
 
 ## `image_z_image_turbo.json` – Text → Bild ✅ lauffähig
 
@@ -72,7 +72,7 @@ Modelle installiert (geprüft 2026-11-08, Größen = Hugging Face). Benötigt `a
 | `94.tags` | Stil-Tags, z. B. `ambient corporate, soft piano, warm pads, 90 BPM, instrumental` |
 | `94.lyrics` | `[instrumental]` für Hintergrundmusik |
 | `94.bpm`, `94.keyscale`, `94.language` | Tempo, Tonart, Sprache |
-| `99.value` | Dauer in Sekunden (Primitive, speist `98.seconds` und `94.duration`) |
+| `98.seconds`, `94.duration` | Dauer in Sekunden – **beide** setzen. `99` ist ein reiner UI-Primitive (speist beide im Editor), comfy-cli ≥ 1.13 lehnt Slots darauf ab |
 | `109.value` | Seed |
 | `111.filename_prefix` | Ausgabename |
 

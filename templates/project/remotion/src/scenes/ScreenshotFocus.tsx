@@ -46,10 +46,12 @@ const ease = Easing.inOut(Easing.cubic);
  * cover = Anteil des Frames, den das (ungezoomte) Bild füllt – der Bildausschnitt
  * wird so begrenzt, dass beim Zoom kein leerer Rand neben dem Screenshot erscheint.
  */
-const cameraFor = (f: Focus, maxZoom: number, cover: number) => {
+const cameraFor = (f: Focus, maxZoom: number, cover: number, margin = 0) => {
   const s = clamp(f.zoom ?? 0.5 / Math.max(f.w, f.h, 0.01), 1, maxZoom);
   const half = 0.5 / (s * cover); // halbe sichtbare Breite in Bildanteilen
-  const pos = (c: number) => (half >= 0.5 ? 0.5 : clamp(c, half, 1 - half));
+  // margin: gerahmt darf die Kamera etwas über die Bildkante hinaus, damit Elemente am Rand
+  // (z. B. Buttons ganz rechts) nicht angeschnitten werden.
+  const pos = (c: number) => (half >= 0.5 ? 0.5 : clamp(c, half - margin, 1 - half + margin));
   return { s, cx: pos(f.x + f.w / 2), cy: pos(f.y + f.h / 2) };
 };
 
@@ -79,9 +81,10 @@ export const ScreenshotFocus: React.FC<SceneProps> = (p) => {
   });
   // gerahmt füllt ein Screenshot im Videoformat ~84 % des Frames (maxH = 0.84 · Höhe)
   const cover = framed ? 0.84 : 1;
-  const prevCam = idx <= 0 ? { s: 1, cx: 0.5, cy: 0.5 } : cameraFor(foci[idx - 1], maxZoom, cover);
+  const edge = framed ? 0.04 : 0;
+  const prevCam = idx <= 0 ? { s: 1, cx: 0.5, cy: 0.5 } : cameraFor(foci[idx - 1], maxZoom, cover, edge);
   const cam = idx < 0 ? prevCam : (() => {
-    const target = cameraFor(foci[idx], maxZoom, cover);
+    const target = cameraFor(foci[idx], maxZoom, cover, edge);
     const k = ease(clamp((t - foci[idx].at) / MOVE, 0, 1));
     return {
       s: prevCam.s + (target.s - prevCam.s) * k,

@@ -102,7 +102,9 @@ sondern `kind: "code"` + `component: "ScreenshotFocus"` und `assets.image` von H
 - `cursor: false` für Szenen ohne Klick (Ergebnis zeigen); pro Fokus `click: {x,y}`,
   wenn der Klickpunkt nicht die Mitte des Rahmens ist, oder `click: false`.
 - `zoom`: max. Vergrößerung (Default 2.2, berechnet aus der Rahmengröße);
-  `1` = keine Kamerafahrt (Übersichtsszene am Anfang eines Ablaufs).
+  `1` = keine Kamerafahrt (Übersichtsszene am Anfang eines Ablaufs). Gerahmt darf die
+  Kamera bis 4 % über die Bildkante fahren – Elemente direkt am Rand (Buttons ganz rechts)
+  bleiben so vollständig sichtbar.
 - `step`/`steps` → Badge „2/5“; `framed: false` nur, wenn der Screenshot exakt das
   Videoformat hat.
 - Gleiche Datei in mehreren Szenen ist erlaubt (verschiedene Fokuspunkte).

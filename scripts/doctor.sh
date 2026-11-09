@@ -47,16 +47,27 @@ fi
 command -v comfy-mcp >/dev/null && ok "comfy-mcp installiert" || bad "comfy-mcp fehlt → scripts/setup.sh --mcp"
 
 echo "Workflows (gegen laufendes ComfyUI)"
-for f in comfy/workflows/*.json; do
-  r=$(comfy --json workflow validate --workflow "$f" 2>/dev/null | python3 -c '
+# comfy-cli ≥ 1.13: `comfy validate` (früher `comfy workflow validate`); object_info wird
+# selbst geladen und per --input übergeben, weil comfy-cli es nur von Loopback-Adressen holt.
+OI=$(mktemp -t vidgen-object_info.XXXXXX)
+trap 'rm -f "$OI"' EXIT
+if curl -s -m 60 -f "$COMFY_URL/object_info" -o "$OI"; then
+  for f in comfy/workflows/*.json; do
+    r=$(comfy --json validate --workflow "$f" --input "$OI" 2>/dev/null | python3 -c '
 import json,sys
 d=json.load(sys.stdin); x=d.get("data") or {}
-if d.get("ok") and x.get("valid", True): print("ok")
-else:
-  e=(x.get("errors") or [{}])[0]; print(e.get("code","?")+": "+e.get("message","")[:90])' 2>/dev/null)
-  name=$(basename "$f" .json)
-  [ "$r" = "ok" ] && ok "$name" || warn "$name – ${r:-nicht prüfbar}"
-done
+errs=x.get("errors") or ([d["error"]] if d.get("error") else [])
+# Eingabedateien (Referenzstimme, Startbild) setzen die Tools erst zur Laufzeit per Upload
+errs=[e for e in errs if not (e.get("code")=="unknown_enum_value"
+      and any(ext in e.get("message","") for ext in (".wav",".mp3",".png",".jpg",".jpeg",".webp")))]
+if (d.get("ok") or d.get("data")) and not errs: print("ok")
+else: e=errs[0] if errs else {}; print(e.get("code","?")+": "+str(e.get("message",""))[:90])' 2>/dev/null)
+    name=$(basename "$f" .json)
+    [ "$r" = "ok" ] && ok "$name" || warn "$name – ${r:-nicht prüfbar}"
+  done
+else
+  warn "object_info von $COMFY_URL nicht ladbar – Workflows nicht geprüft"
+fi
 
 echo "Skills"
 for s in explainer story storyboard comfyui voiceover scene-coding video-review vidgen-setup; do

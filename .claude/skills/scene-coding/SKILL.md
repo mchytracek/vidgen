@@ -33,7 +33,11 @@ Vorlage aus `templates/project/remotion/` (kopiert `scripts/init.sh`). Aufbau:
   Musik global.
 - `src/scenes/*.tsx` – eine Komponente je `visual.component`
   (`TitleCard`, `ImageKenBurns`, `ClipScene`, `BulletList`, `BigNumber`, `ImageWithCaption`,
-  `ScreenshotFocus`). Neue Szenentypen hier anlegen und in `src/scenes/index.ts` registrieren.
+  `ScreenshotFocus`, `DocumentIntake`). Neue Szenentypen hier anlegen und in `src/scenes/index.ts` registrieren.
+- `DocumentIntake` – Dokument-Eingang als Code-Grafik: `variant: "question"` (PDF-Karte
+  mit Dateiname + Fragezeichen) oder `"mail"` (PDF rutscht in Umschlag, fliegt ins Postfach, „+1“).
+  Props `fileName`, `inboxLabel`. `PdfCard`/`Inbox` sind exportiert – für eigene,
+  videospezifische Szenen (z. B. PDFs, die in eine Liste fliegen) wiederverwenden.
 - `ScreenshotFocus` – eigener Produkt-Screenshot (`assets/screens/`) mit Kamerafahrt
   auf `props.focus`, Rahmen/Spotlight, Cursor mit Klick, Schritt-Badge. Props-Referenz
   im Kopfkommentar der Datei und im Skill `storyboard`. Fokus-Positionen prüfen:
@@ -50,6 +54,17 @@ npx remotion render Explainer ../renders/final.mp4
 
 Vor dem Render `python3 tools/storyboard.py sync` (kopiert das
 Storyboard nach `assets/storyboard.json`, damit Remotion es lädt).
+
+**Hängt `still`/`render` mit „Waiting for root component to load … not cleared after 28000ms“**
+(einmal beobachtet, nicht reproduzierbar; Bundle und Code waren in Ordnung): erst
+`rm -rf node_modules/.cache` und erneut versuchen; hilft das nicht, vorab bündeln und
+aus dem Bundle rendern – das umgeht den Fehler zuverlässig:
+
+```bash
+npx remotion bundle --out-dir=/tmp/vidgen-bundle      # nach jeder Code-/Storyboard-Änderung neu
+npx remotion still /tmp/vidgen-bundle Explainer --frame=120 ../review/f120.png
+npx remotion render /tmp/vidgen-bundle Explainer ../renders/final.mp4
+```
 
 ## Hyperframes – `video/hyperframes/`
 

@@ -2,6 +2,7 @@ import { Scene, SceneProps } from "../types";
 import { BigNumber } from "./BigNumber";
 import { BulletList } from "./BulletList";
 import { ClipScene } from "./ClipScene";
+import { DocumentIntake } from "./DocumentIntake";
 import { ImageKenBurns } from "./ImageKenBurns";
 import { ScreenshotFocus } from "./ScreenshotFocus";
 import { TitleCard } from "./TitleCard";
@@ -15,6 +16,7 @@ export const SCENES: Record<string, React.FC<SceneProps>> = {
   BulletList,
   BigNumber,
   ScreenshotFocus,
+  DocumentIntake,
 };
 
 export const resolveScene = (scene: Scene): React.FC<SceneProps> => {

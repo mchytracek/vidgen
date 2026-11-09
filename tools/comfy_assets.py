@@ -29,9 +29,10 @@ I2V = {"file": "video_ltx2_3_i2v.json", "image": "269.image", "prompt": "320.val
        "prefix": "75.filename_prefix"}
 MUSIC = {"file": "audio_ace_step1_5_xl_turbo.json", "tags": "94.tags", "lyrics": "94.lyrics",
          "bpm": "94.bpm",
-         # 99 ist ein UI-PrimitiveNode: beim Konvertieren ins API-Format zählen die
-         # Widget-Werte der Ziel-Nodes, deshalb Dauer zusätzlich direkt in 98/94 setzen.
-         "seconds": ["99.value", "98.seconds", "94.duration"], "seed": "109.value", "prefix": "111.filename_prefix"}
+         # 99 ist ein reiner UI-PrimitiveNode (nicht in object_info) – comfy-cli ≥ 1.13 lehnt
+         # Slots darauf ab. Beim Konvertieren ins API-Format zählen ohnehin die Widget-Werte
+         # der Ziel-Nodes, deshalb die Dauer direkt in 98/94 setzen.
+         "seconds": ["98.seconds", "94.duration"], "seed": "109.value", "prefix": "111.filename_prefix"}
 
 IMAGE_SIZE = {"landscape": (1344, 768), "portrait": (768, 1344), "square": (1024, 1024)}
 CLIP_SIZE = {"landscape": (1280, 720), "portrait": (720, 1280), "square": (960, 960)}

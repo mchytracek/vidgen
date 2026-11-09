@@ -100,10 +100,45 @@ def run(cmd: list[str], **kw) -> subprocess.CompletedProcess:
     return subprocess.run(cmd, text=True, capture_output=True, **kw)
 
 
+_OBJECT_INFO: Path | None = None
+
+
+def comfy_object_info() -> Path:
+    """object_info des konfigurierten Servers als Datei (einmal pro Prozess geladen).
+
+    comfy-cli ≥ 1.13 lädt object_info (für `workflow set-slot`/`slots`) im lokalen Modus nur
+    von Loopback-Adressen (SSRF-Schutz) und verweist für andere Quellen auf `--input <datei>`.
+    Für einen entfernten ComfyUI im LAN/VPN holen wir die Datei deshalb selbst – von genau der
+    Adresse, die der User in .vidgen.env bzw. COMFYUI_URL konfiguriert hat.
+    """
+    global _OBJECT_INFO
+    if _OBJECT_INFO and _OBJECT_INFO.is_file():
+        return _OBJECT_INFO
+    import tempfile
+    import urllib.request
+    from urllib.parse import urlparse
+    url = comfy_url()
+    host = re.sub(r"[^A-Za-z0-9.-]", "_", urlparse(url).netloc)
+    dst = Path(tempfile.gettempdir()) / f"vidgen-object_info-{host}-{os.getpid()}.json"
+    try:
+        with urllib.request.urlopen(f"{url}/object_info", timeout=60) as r, open(dst, "wb") as f:
+            shutil.copyfileobj(r, f)
+    except OSError as exc:
+        die(f"object_info von {url} nicht ladbar – läuft ComfyUI dort?\n{exc}")
+    _OBJECT_INFO = dst
+    return dst
+
+
 def comfy(*args: str, timeout: int | None = None) -> dict:
-    """Ruft `comfy --json …` auf und gibt das letzte envelope/1-Objekt zurück."""
+    """Ruft `comfy --json …` auf und gibt das letzte envelope/1-Objekt zurück.
+
+    Bei einem entfernten Server bekommen `workflow set-slot|slots` das object_info als
+    `--input` (siehe comfy_object_info)."""
     if not shutil.which("comfy"):
         die("comfy-cli nicht gefunden (pip install comfy-cli)")
+    if args[:1] == ("workflow",) and args[1:2] in (("set-slot",), ("slots",)) and comfy_is_remote() \
+            and "--input" not in args:
+        args = (*args[:2], "--input", str(comfy_object_info()), *args[2:])
     cp = run(["comfy", "--json", *args], timeout=timeout, env=comfy_env())
     env = None
     for line in cp.stdout.splitlines():

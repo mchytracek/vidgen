@@ -20,7 +20,7 @@ description: Richtet die lokale Videoproduktion ein und diagnostiziert sie – C
 | Whisper (Sprachprüfung) | `command -v whisper-cli` + Modell `~/.local/share/whisper-cpp/ggml-large-v3-turbo-q5_0.bin` | `brew install whisper-cpp`; Modell (≈ 574 MB) von `huggingface.co/ggerganov/whisper.cpp` (`resolve/main/ggml-large-v3-turbo-q5_0.bin`) laden; anderer Pfad über `VIDGEN_WHISPER_MODEL` |
 | Node ≥ 22 | `node --version` | – |
 | Hersteller-Skills | `ls .claude/skills` | `scripts/setup.sh --skills` |
-| ChatterBox (TTS) | `comfy --json workflow validate --workflow comfy/workflows/audio-chatterbox_tts_multilingual.json` | MCP `install_node` / ComfyUI-Manager: *ComfyUI_Fill-ChatterBox* |
+| ChatterBox (TTS) | `scripts/doctor.sh` (Abschnitt Workflows; nutzt `comfy validate --input <object_info>`) | MCP `install_node` / ComfyUI-Manager: *ComfyUI_Fill-ChatterBox* |
 | ACE-Step (Musik) | dito mit `audio_ace_step1_5_xl_turbo.json` | Modelle per MCP `download_model` (siehe `comfy/workflows/README.md`) |
 
 Installationen und Modell-Downloads **immer erst nach Zustimmung** – Größe nennen
