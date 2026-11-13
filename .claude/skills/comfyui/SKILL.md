@@ -44,8 +44,8 @@ und dann den LTX-i2v-Clip, und trägt alle Pfade ins Storyboard ein.
 Bei vielen Clips im Hintergrund starten (`run_in_background`).
 Es lädt das Storyboard vor jedem Schreiben frisch und ändert nur das jeweilige Asset –
 Änderungen am Storyboard während eines langen Laufs gehen also nicht verloren.
-`--force` erzeugt auch die Startbilder neu; nur Clips neu: Einträge `assets.clip` entfernen
-(bzw. Dateien löschen) und `--kind clip` ohne `--force`.
+`--force` wirkt nur auf die gewählte Art: `--kind clip --force` erneuert nur die Clips
+(Startbilder bleiben), `--kind image --force` nur die Bilder; ohne `--kind` alles.
 
 **Clip-Länge:** LTX-2.3 blendet die letzten ~2 s jedes Clips nach Schwarz ab. Clips werden
 deshalb 3 s länger als die Szene erzeugt (max. 10 s); ist die Szene länger als ~7,7 s, setzt

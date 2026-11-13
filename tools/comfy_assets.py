@@ -181,8 +181,11 @@ def main():
         ref_name = stage(pdir, ref_path, f"vidgen_{slug}_charref{ref_path.suffix}", a.dry_run)
 
     def have(s, key):
+        """Asset vorhanden und nicht per --force neu verlangt. --force wirkt nur auf die gewählte Art:
+        `--kind clip --force` erneuert Clips, lässt die Startbilder aber stehen."""
         rel = (s.get("assets") or {}).get(key)
-        return bool(rel) and (pdir / "assets" / rel).exists() and not a.force
+        forced = a.force and (a.kind is None or {"image": "image", "clip": "clip", "music": "file"}[a.kind] == key)
+        return bool(rel) and (pdir / "assets" / rel).exists() and not forced
 
     for s in select_scenes(sb, a.only):
         v, sid = s["visual"], s["id"]
@@ -193,7 +196,7 @@ def main():
         if needs_image and (not have(s, "image") or redo_swap):
             w, h = IMAGE_SIZE[ori]
             base = pdir / "assets" / "images" / f"{sid}_base.png"
-            if not (redo_swap and base.is_file() and not a.force):
+            if not (redo_swap and base.is_file() and not (a.force and a.kind in (None, "image"))):
                 prompt = f"{v['prompt'].rstrip('. ')}. {style}" if style else v["prompt"]
                 print(f"{sid}: Bild ({w}x{h})")
                 out = run_workflow(pdir, f"{sid}_image", IMAGE, {
