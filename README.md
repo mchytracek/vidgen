@@ -223,6 +223,113 @@ Sitzt ein Rahmen daneben, wird die Koordinate im Storyboard korrigiert, nicht im
 - Screenshots mindestens in Videobreite aufnehmen (bei 16:9 ≥ 1700 px breit),
   sonst wird der Zoom unscharf; Retina-Aufnahmen sind ideal.
 
+## Remotion: Videos aus Code
+
+### Was ist Remotion?
+
+[Remotion](https://www.remotion.dev) ist ein Framework, mit dem man Videos in
+**React** programmiert statt sie in einem Schnittprogramm zusammenzuklicken. Eine
+Szene ist eine React-Komponente; die Zeit ist eine Zahl (`useCurrentFrame()`), aus
+der Position, Zoom, Deckkraft usw. berechnet werden. Zum Rendern öffnet Remotion
+die Seite in einem Headless-Chrome, macht von jedem Frame einen Screenshot und
+setzt die Frames mit FFmpeg samt Ton zu einem MP4 zusammen.
+
+Vorteile für Erklärvideos: Text ist immer gestochen scharf und änderbar, Animationen
+sind exakt und reproduzierbar, und das ganze Video lässt sich aus Daten erzeugen.
+
+### Was macht Remotion in vidgen?
+
+Remotion ist der Standard-**Compositor**: Es setzt die von ComfyUI erzeugten Bilder,
+Clips, Sprachaufnahmen und die Musik zum fertigen Video zusammen. Das Gerüst liegt
+nach `init.sh` in `video/remotion/` und rendert **direkt aus `storyboard.json`**:
+
+```
+video/
+├── storyboard.json          ← einzige Wahrheit (Szenen, Dauern, Asset-Pfade)
+├── assets/                  ← Remotions public-Ordner: Bilder, Clips, Audio + Kopie des Storyboards
+└── remotion/
+    ├── remotion.config.ts   ← public = ../assets, Einstieg = src/index.ts
+    └── src/
+        ├── Root.tsx         ← Composition „Explainer“: Format, fps, Länge aus dem Storyboard
+        ├── Explainer.tsx    ← legt die Szenen hintereinander, Audio je Szene, Musik global
+        └── scenes/          ← eine Komponente je visual.component (TitleCard, ImageKenBurns,
+                               ClipScene, BulletList, BigNumber, ScreenshotFocus, …)
+```
+
+Die Gesamtlänge ergibt sich aus den Szenendauern im Storyboard; welche Komponente
+eine Szene zeichnet, steht in `visual.component`. Neue Szenentypen kommen nach
+`src/scenes/` und werden in `src/scenes/index.ts` registriert.
+
+### Remotion auf der Kommandozeile
+
+Alle Befehle im Ordner `video/remotion/` ausführen. Vorher das Storyboard nach
+`assets/` kopieren – Remotion liest nur diese Kopie:
+
+```bash
+python3 tools/storyboard.py sync
+```
+
+```bash
+cd video/remotion
+```
+
+Einmalig (macht `init.sh` bereits, sonst nach einem frischen Klon):
+
+```bash
+npm install
+```
+
+**Studio – Live-Vorschau im Browser** (Zeitleiste, Szenen einzeln anspringen,
+Änderungen am Code erscheinen sofort; nach Änderungen am Storyboard erneut
+`storyboard.py sync` und die Seite neu laden):
+
+```bash
+npx remotion studio
+```
+
+Läuft auf `http://localhost:3000`; anderer Port: `--port 3001`, ohne Browser-Start: `--no-open`.
+
+**Compositions anzeigen** (Format, fps, Länge – gute Schnellprüfung, ob das Storyboard geladen wird):
+
+```bash
+npx remotion compositions
+```
+
+**Einzelbild rendern** (z. B. Frame 120 zum Prüfen von Layout und Text):
+
+```bash
+npx remotion still Explainer ../review/f120.png --frame=120
+```
+
+**Video rendern:**
+
+```bash
+npx remotion render Explainer ../renders/final.mp4
+```
+
+Nützliche Optionen für `render`:
+
+| Option | Wirkung |
+|--------|---------|
+| `--frames=0-299` | nur einen Ausschnitt rendern (hier die ersten 10 s bei 30 fps) |
+| `--scale=0.5` | halbe Auflösung – schneller Entwurf |
+| `--crf=18` | Qualität (niedriger = besser/größer, Default 18 für H.264) |
+| `--concurrency=8` | Anzahl paralleler Browser-Tabs |
+| `--muted` | ohne Ton |
+
+Kurzformen aus `package.json`: `npm run studio`, `npm run still -- ../review/f.png --frame=120`,
+`npm run render`.
+
+Schneller Entwurf, z. B. um Timing und Übergänge zu prüfen:
+
+```bash
+npx remotion render Explainer ../renders/draft.mp4 --scale=0.5
+```
+
+Danach prüft `python3 tools/review.py --video renders/draft.mp4` (aus dem Repo-Wurzelordner)
+Kontaktbögen und Lautheit. Lizenz: Remotion ist für Firmen ab 4 Mitarbeitenden
+kostenpflichtig, siehe [Lizenzen beachten](#lizenzen-beachten).
+
 ## Voraussetzungen
 
 | Komponente | Zweck |
