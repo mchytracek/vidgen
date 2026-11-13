@@ -60,6 +60,14 @@ def validate(sb: dict) -> list[str]:
             errs.append(f"{where}: visual.component fehlt für kind=code")
         if v.get("component") == "ScreenshotFocus":
             errs += _check_screenshot(s, where, kind)
+        char = v.get("character")
+        if char:
+            if not sb["style"].get("characterRef"):
+                errs.append(f"{where}: visual.character gesetzt, aber style.characterRef fehlt (tools/character.py)")
+            if kind not in ("image", "clip"):
+                errs.append(f"{where}: visual.character nur für kind=image/clip")
+            if isinstance(char, dict) and set(char) - {"wear", "action", "seed"}:
+                errs.append(f"{where}: visual.character kennt nur wear, action, seed")
     return errs
 
 

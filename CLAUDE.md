@@ -75,6 +75,7 @@ Story und Storyboard abgenickt haben. Ausnahme: Er sagt ausdrücklich „mach du
   Anderer Rechner: `scripts/init.sh --comfy-url http://host:8188` bzw. `.vidgen.env`
   (Details: Skill `comfyui`, „Entfernter ComfyUI-Server“). Aktive Adresse:
   `python3 tools/_common.py comfy-url`.
-- Bild: **Z-Image Turbo**. Video: **LTX-2.3** (t2v/i2v). Stimme: **ChatterBox
+- Bild: **Z-Image Turbo**; Figur aus Foto / Figurentausch: **Qwen Image 2.1 Turbo Edit**
+  (`tools/character.py`). Video: **LTX-2.3** (t2v/i2v). Stimme: **ChatterBox
   Multilingual** mit Standardstimme Martin (`~/.config/vidgen/voices/martin_ref.wav`, nicht im Repo) (Custom Node, siehe Setup). Musik: **ACE-Step 1.5** (Modelle optional).
 - Fallback-Stimme ohne ComfyUI: macOS `say` (nur für Entwürfe).

@@ -35,7 +35,15 @@
             "muted": { "type": "string" }
           }
         },
-        "font": { "type": "string" }
+        "font": { "type": "string" },
+        "characterRef": {
+          "type": "string",
+          "description": "Wiederkehrende Figur, relativ zu assets/ (z. B. images/character_ref.png) – aus einem Foto mit tools/character.py; Szenen mit visual.character bekommen sie per Qwen Image Edit"
+        },
+        "characterStyle": {
+          "type": "string",
+          "description": "Optional: Stil für die Umwandlung Foto → Figur (Default: imagePrompt)"
+        }
       }
     },
     "voice": {
@@ -87,7 +95,24 @@
               "motionPrompt": { "type": ["string", "null"] },
               "seed": { "type": "integer" },
               "component": { "type": "string" },
-              "props": { "type": "object" }
+              "props": {
+                "type": "object",
+                "description": "Komponenten-Props; bei Clips setzt comfy_assets.py ggf. playbackRate (< 1), weil LTX die letzten ~2 s abblendet"
+              },
+              "character": {
+                "description": "Referenzfigur (style.characterRef) in dieses Bild einsetzen: true oder {wear, action, seed} (englisch)",
+                "oneOf": [
+                  { "type": "boolean" },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "wear": { "type": "string", "description": "z. B. 'They wear the white beekeeper suit of <image1>.' (Default: Outfit der Referenz)" },
+                      "action": { "type": "string", "description": "Mimik/Handlung, z. B. 'Eyes closed in bliss, licking the honey dipper.'" },
+                      "seed": { "type": "integer" }
+                    }
+                  }
+                ]
+              }
             }
           },
           "onScreenText": { "type": "array", "items": { "type": "string" } },

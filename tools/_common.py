@@ -86,6 +86,28 @@ def save_sb(pdir: Path, sb: dict) -> None:
     )
 
 
+def patch_sb(pdir: Path, fn) -> dict:
+    """Storyboard frisch von der Platte laden, `fn(sb)` anwenden, speichern.
+
+    Für lange Läufe (Clips, TTS): Sie dürfen nie ihre beim Start geladene Kopie
+    zurückschreiben – sonst gehen Änderungen verloren, die währenddessen am
+    Storyboard gemacht wurden (Props, Texte, Timing).
+    """
+    sb = load_sb(pdir)
+    fn(sb)
+    save_sb(pdir, sb)
+    return sb
+
+
+def patch_scene(pdir: Path, sid: str, fn) -> dict:
+    """Wie `patch_sb`, aber nur für die Szene `sid`: `fn(scene)`."""
+    def apply(sb: dict) -> None:
+        for s in sb["scenes"]:
+            if s["id"] == sid:
+                fn(s)
+    return patch_sb(pdir, apply)
+
+
 def select_scenes(sb: dict, only: str | None) -> list[dict]:
     if not only:
         return sb["scenes"]

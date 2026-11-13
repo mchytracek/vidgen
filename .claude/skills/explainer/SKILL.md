@@ -48,6 +48,14 @@ sie zu generieren. Format-Warnungen von `check` ansprechen (anderes
 Seitenverhältnis → `framed: true` bleibt Default; zu klein → neu aufnehmen).
 ComfyUI liefert dann nur Stimme, Musik und ggf. Stimmungsbilder (Intro/Outro).
 
+**Foto einer Person als Figur** („mach aus dem Foto eine Comicfigur“): Das Foto mit `Read`
+ansehen, die Figur **vor** der Story festlegen – `python3 tools/character.py ref images/<foto>`,
+Vergleichsbild `review/character/ref_grid.png` dem User zeigen, gewählte Variante mit
+`character.py pick <seed>` übernehmen (Details: Skill `comfyui`). Nicht nur per Textbeschreibung
+arbeiten – das trifft keine Ähnlichkeit, und ein späterer Figurenwechsel macht alle Bilder
+und Clips ungültig. **Namen der Figur:** Aussprache gleich mit klären (Skill `voiceover`,
+„Eigennamen“), sie kommt in fast jedem Satz vor.
+
 ## 2. Story → `story.md` (Skill `story`)
 ## 3. Storyboard → `storyboard.json` (Skill `storyboard`) → **Gate**
 

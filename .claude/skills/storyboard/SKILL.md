@@ -15,6 +15,8 @@ Nach jedem Schreiben: `python3 tools/storyboard.py validate`.
   das ist der wichtigste Hebel für ein einheitliches Video. Beispiel:
   `"flat vector illustration, clean geometric shapes, soft grain, limited palette of deep navy, coral and cream, generous negative space, no text"`.
 - `style.palette`, `style.font`: für Code-Szenen (Titel, Diagramme).
+- `style.characterRef`: wiederkehrende Figur aus einem Foto (setzt `tools/character.py pick`,
+  Ablauf im Skill `comfyui`, „Wiederkehrende Figur aus einem Foto“).
 - `voice`, `music`, `compositor` aus dem Brief übernehmen.
 
 ## Visual-Arten pro Szene (`visual.kind`)
@@ -36,8 +38,33 @@ Faustregeln: ≥ 40 % `code`-Szenen (Präzision, Lesbarkeit), Clips sparsam
 - **Kein Text im Bild** anfordern – Schrift kommt immer aus dem Code (scharf, übersetzbar).
 - Freiraum für Overlays einplanen: „subject on the left third, empty space on the right“.
 - Wiederkehrende Figuren/Objekte mit identischer Beschreibung + gleichem `seed`.
+  Soll die Figur einer echten Person ähneln: `style.characterRef` + `visual.character` (unten).
 - `visual.motionPrompt` (nur `clip`): **eine** Bewegung + Kamera, z. B.
-  „slow dolly-in, gears begin to turn, steam rises gently“. LTX-Clips 5 s, 25 fps, 1280×720.
+  „slow dolly-in, gears begin to turn, steam rises gently“. LTX-Clips 25 fps, 1280×720, so lang
+  wie die Szene + 3 s Reserve (max. 10 s) – Szenen mit Clip daher **≤ 7,5 s** Sprechzeit planen.
+
+## Figur einsetzen (`visual.character`)
+
+Mit `style.characterRef` ersetzt Qwen Image Edit die Hauptfigur des Z-Image-Bildes durch die
+Referenzfigur. `visual.prompt` beschreibt weiter Set, Handlung und eine ungefähr passende Figur.
+
+```json
+"visual": {
+  "kind": "clip",
+  "prompt": "<Figurbeschreibung>, in a white beekeeper suit, lifting the roof off a beehive …",
+  "motionPrompt": "…",
+  "character": {
+    "wear": "They wear a full white beekeeper suit whose white hood frames the face, as in <image1>.",
+    "action": "They lift the hive roof with an amazed face and an open mouth."
+  }
+}
+```
+
+- `true` genügt, wenn die Figur ihr Referenz-Outfit trägt und die Mimik egal ist.
+- **Mimik/Handlung immer in `action` nennen**, wenn sie für den Gag zählt – sonst lächelt die
+  Figur neutral wie auf der Referenz.
+- Abweichende Kleidung (Anzug, Kostüm) in `wear` beschreiben, sonst trägt sie das Referenz-Outfit.
+- Englisch, `<image1>` = Szenenbild, `<image2>` = Referenzfigur.
 
 ## Szenen-Felder (Kurzreferenz)
 

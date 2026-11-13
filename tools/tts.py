@@ -4,6 +4,7 @@
   python3 tools/tts.py   # Backend aus storyboard.voice
   python3 tools/tts.py --backend say        # Entwurf mit macOS-Stimme
   python3 tools/tts.py --only s02 --force
+  python3 tools/tts.py --try "Tobi=Tobie,Tohbie,Tohbi"   # Hörproben für einen Eigennamen
 
 Backends:
   comfyui-chatterbox  ChatterBox Multilingual in ComfyUI (Custom Node nötig, Referenzstimme)
@@ -21,7 +22,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from _common import (VOICE_HOME, WORKFLOWS, comfy, comfy_output, die, load_sb, project_dir, run, save_sb,
+from _common import (VOICE_HOME, WORKFLOWS, comfy, comfy_output, die, load_sb, patch_scene, project_dir, run,
                      select_scenes, voice_file)
 
 # Slots nach Installation von ComfyUI_Fill-ChatterBox mit list_workflow_slots verifizieren!
@@ -476,12 +477,65 @@ def tts_chatterbox(pdir: Path, sb: dict, s: dict, ref_name: str | None, dst_stem
     return out
 
 
+def try_pronunciation(pdir: Path, sb: dict, backend: str, ref_name: str | None, spec: str,
+                      sentence: str | None) -> None:
+    """Hörproben: denselben Satz mit verschiedenen Lexikon-Schreibweisen eines Worts vertonen.
+
+    Ergebnis: review/aussprache/<n>_<variante>.mp3 und alle.mp3 (n Pieptöne vor Variante n).
+    Der User wählt; die Wahl kommt als voice.lexicon ins Storyboard.
+    """
+    import copy
+    if "=" not in spec:
+        die('--try erwartet WORT=Variante1,Variante2 (z. B. "Tobi=Tobie,Tohbie")')
+    word, rest = spec.split("=", 1)
+    word = word.strip()
+    variants = [word] + [v.strip() for v in rest.split(",") if v.strip() and v.strip() != word]
+    if not sentence:
+        pat = re.compile(rf"(?<![\w-]){re.escape(word)}(?![\w-])", re.IGNORECASE)
+        hits = [s["narration"] for s in sb["scenes"] if pat.search(s["narration"])]
+        sentence = hits[0] if hits else f"Das ist {word}. {word} ist gleich wieder da."
+    out_dir = pdir / "review" / "aussprache"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    seq: list[Path] = []
+    beep = out_dir / "_beep.wav"
+    run(["ffmpeg", "-y", "-loglevel", "error", "-f", "lavfi", "-i", "sine=f=880:d=0.2", "-af", "apad=pad_dur=0.25",
+         "-ar", "44100", "-ac", "1", str(beep)])
+    print(f"Satz: {sentence}")
+    for n, var in enumerate(variants, 1):
+        tsb = copy.deepcopy(sb)
+        lex = {k: v for k, v in ((tsb.get("voice") or {}).get("lexicon") or {}).items() if k.lower() != word.lower()}
+        if var != word:
+            lex[word] = var
+        tsb.setdefault("voice", {})["lexicon"] = lex
+        safe = re.sub(r"[^\w-]+", "_", var)
+        stem = out_dir / f"{n}_{safe}"
+        print(f"{n}: {var}" + (" (ohne Lexikon)" if var == word else ""))
+        if backend == "say":
+            out = tts_say(apply_lexicon(sentence, lex), (tsb.get("voice") or {}).get("sayVoice", "Anna"), stem)
+        else:
+            out = tts_chatterbox(pdir, tsb, {"id": f"try{n}", "narration": sentence}, ref_name, stem)
+        wav = out_dir / f"_{n}.wav"
+        run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(out), "-ar", "44100", "-ac", "1", str(wav)])
+        seq += [beep] * n + [wav]
+    lst = out_dir / "_list.txt"
+    lst.write_text("".join(f"file '{p}'\n" for p in seq))
+    run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(lst), "-b:a", "192k",
+         str(out_dir / "alle.mp3")])
+    for f in out_dir.glob("_*"):
+        f.unlink()
+    print(f"✔ {out_dir.relative_to(pdir)}/alle.mp3 – n Pieptöne vor Variante n. Den User wählen lassen,")
+    print(f'  dann voice.lexicon {{"{word}": "<Variante>"}} (Genitiv/Plural, z. B. "{word}s", eigens eintragen)')
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--dir", dest="project", help="Videoordner (Default: video/)")
     ap.add_argument("--backend", choices=["comfyui-chatterbox", "say"])
     ap.add_argument("--only")
     ap.add_argument("--force", action="store_true")
+    ap.add_argument("--try", dest="try_spec", metavar="WORT=V1,V2",
+                    help="Hörproben für die Aussprache eines Worts (review/aussprache/), vertont keine Szenen")
+    ap.add_argument("--sentence", help="Satz für --try (Default: erster Sprechtext mit dem Wort)")
     a = ap.parse_args()
 
     pdir = project_dir(a.project)
@@ -506,6 +560,10 @@ def main():
         else:
             print("Hinweis: keine voice.reference – ChatterBox nutzt seine eingebaute Stimme.")
 
+    if a.try_spec:
+        try_pronunciation(pdir, sb, backend, ref_name, a.try_spec, a.sentence)
+        return
+
     for s in select_scenes(sb, a.only):
         cur = (s.get("assets") or {}).get("audio")
         if cur and (pdir / "assets" / cur).exists() and not a.force:
@@ -516,8 +574,10 @@ def main():
             out = tts_say(s["narration"], voice.get("sayVoice", "Anna"), stem)
         else:
             out = tts_chatterbox(pdir, sb, s, ref_name, stem)
-        s.setdefault("assets", {})["audio"] = f"audio/{out.name}"
-        save_sb(pdir, sb)
+        rel = f"audio/{out.name}"
+        s.setdefault("assets", {})["audio"] = rel
+        # frisch laden statt die Start-Kopie zurückzuschreiben (parallele Storyboard-Änderungen bleiben erhalten)
+        patch_scene(pdir, s["id"], lambda sc, rel=rel: sc.setdefault("assets", {}).__setitem__("audio", rel))
 
     subprocess.run(["python3", str(Path(__file__).with_name("storyboard.py")), "timing", "--dir", str(pdir)], check=False)
 

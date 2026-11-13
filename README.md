@@ -244,7 +244,7 @@ comfy/workflows/          geprüfte ComfyUI-Workflows + Slot-Referenz (README.md
 schemas/                  storyboard.schema.json – Datenvertrag aller Phasen
 templates/project/        Vorlage für video/ inkl. Remotion-Gerüst (rendert direkt aus storyboard.json)
 templates/claude-settings.json  empfohlene Permissions (→ .claude/settings.json kopieren)
-tools/                    Python-Helfer (nur Stdlib): init_video, storyboard, comfy_assets, tts, review, screens
+tools/                    Python-Helfer (nur Stdlib): init_video, storyboard, comfy_assets, character, tts, review, screens
 scripts/                  init.sh, update-template.sh, setup.sh, doctor.sh, comfy-mcp.sh (MCP-Start mit ComfyUI-Adresse)
 video/                    entsteht erst durch init.sh – das Video dieses Klons
 voices/                   Referenzstimmen für Voice-Cloning (nur mit Rechten!, git-ignoriert);
@@ -273,6 +273,9 @@ Hersteller-Skills (von `setup.sh` global nach `~/.claude/skills`, nicht im Repo)
 scripts/init.sh "Demo"
 python3 tools/tts.py --backend say      # Entwurfsstimme, setzt Timing
 python3 tools/comfy_assets.py           # Bilder/Clips/Musik aus ComfyUI
+# optional, wiederkehrende Figur aus einem Foto (vor comfy_assets.py):
+python3 tools/character.py ref images/person.png && python3 tools/character.py pick 2
+python3 tools/tts.py --try "Tobi=Tobie,Tohbie"   # Hörproben für Eigennamen
 (cd video/remotion && npx remotion render Explainer ../renders/final.mp4)
 python3 tools/review.py                 # Kontaktbögen, Lautheit (braucht ffmpeg)
 ```

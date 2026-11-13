@@ -64,6 +64,14 @@ abrupt bzw. ohne fallende Betonung (typisch beim Schlusssatz): `{"params": {"cfg
 "exaggeration": 0.35}}` – ruhiger, letzte Silbe gedehnt, Tonhöhe fällt. Mehrere Seeds probieren.
 Beim letzten Satz außerdem `padAfter` ≈ 1.5, damit das Video nicht direkt nach dem Wort endet.
 
+**Eigennamen** (Hauptfigur, Firma, Produkt) kommen oft in fast jedem Satz vor – Aussprache
+nicht raten, sondern Hörproben vom User wählen lassen:
+`python3 tools/tts.py --try "Tobi=Tobie,Tohbie,Tohbi"` → `review/aussprache/alle.mp3`
+(n Pieptöne vor Variante n, Variante 1 = ohne Lexikon). Die Wahl ins `voice.lexicon`,
+Genitiv/Plural eigens („Tobis“: „Tohbies“). Bewährt für Deutsch: langes i am Ende mit „ie“,
+Betonung/Länge auf der ersten Silbe mit Dehnungs-h („Tobi“ → „Tohbie“). Bindestriche
+(„Toh-bie“) bringen ChatterBox ins Stolpern.
+
 Whisper prüft Vollständigkeit, nicht Klang – den User auf Stellen hinweisen,
 die er anhören soll (Abkürzungen, Fremdwörter, Satzenden).
 - Lautheit wird im Final-Render normalisiert (Skill `video-review`).

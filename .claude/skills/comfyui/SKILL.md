@@ -34,6 +34,7 @@ Slot-Adressen: `comfy/workflows/README.md` – **vor dem ersten Lauf lesen.**
 python3 tools/comfy_assets.py                                 # alle fehlenden Assets
 python3 tools/comfy_assets.py                 --only s03,s07  # gezielt neu
 python3 tools/comfy_assets.py                 --kind image    # nur Bilder
+python3 tools/comfy_assets.py                 --reswap        # nur Figurentausch neu
 python3 tools/comfy_assets.py                 --dry-run       # nur zeigen, was liefe
 ```
 
@@ -41,6 +42,39 @@ Das Skript nutzt dieselbe Engine (`comfy` CLI) wie der MCP-Server, wendet
 `style.imagePrompt` an, erzeugt für `clip`-Szenen zuerst das Startbild (Z-Image)
 und dann den LTX-i2v-Clip, und trägt alle Pfade ins Storyboard ein.
 Bei vielen Clips im Hintergrund starten (`run_in_background`).
+Es lädt das Storyboard vor jedem Schreiben frisch und ändert nur das jeweilige Asset –
+Änderungen am Storyboard während eines langen Laufs gehen also nicht verloren.
+`--force` erzeugt auch die Startbilder neu; nur Clips neu: Einträge `assets.clip` entfernen
+(bzw. Dateien löschen) und `--kind clip` ohne `--force`.
+
+**Clip-Länge:** LTX-2.3 blendet die letzten ~2 s jedes Clips nach Schwarz ab. Clips werden
+deshalb 3 s länger als die Szene erzeugt (max. 10 s); ist die Szene länger als ~7,7 s, setzt
+das Skript `visual.props.playbackRate` (< 1, `ClipScene` spielt leicht verlangsamt).
+Unter 0,85 warnt es – dann die Szene teilen. Eigene Clip-Komponenten müssen
+`playbackRate` ebenfalls an `OffthreadVideo` weitergeben.
+
+## Wiederkehrende Figur aus einem Foto
+
+Soll eine echte Person (oder ein Maskottchen) als Figur durch das Video führen, reicht
+eine Textbeschreibung nicht: Z-Image trifft keine Ähnlichkeit, und jede Szene variiert.
+Stattdessen:
+
+1. `python3 tools/character.py ref images/<foto>.png` – Qwen Image 2.1 Edit macht aus dem
+   Foto 3 Figurvarianten im Stil von `style.imagePrompt` (bzw. `style.characterStyle`);
+   Vergleich mit dem Foto: `review/character/ref_grid.png`. **Ansehen und dem User zeigen**
+   (Gate – die Figur prägt das ganze Video). Weitere Seeds/`--waist-up`/`--prompt` bei Bedarf.
+2. `python3 tools/character.py pick <seed>` → `assets/images/character_ref.png`, `style.characterRef`.
+3. In jeder Szene mit der Figur `visual.character` setzen (Skill `storyboard`).
+   `visual.prompt` beschreibt Set, Handlung und eine ungefähr passende Figur – Z-Image liefert
+   den Bildaufbau (`images/<id>_base.png`), Qwen setzt die Referenzfigur ein.
+4. `python3 tools/comfy_assets.py --kind image` und die Bilder ansehen. Passt Mimik oder
+   Kleidung nicht: `visual.character.action`/`wear` schärfen, `--reswap --only <id>`.
+
+Erst danach Clips erzeugen (ein Figurenwechsel macht alle Clips ungültig).
+
+**Ohne Foto** (erfundene Figur): eine wortgleiche Figurbeschreibung in allen Prompts + gleicher
+Seed hält sie erstaunlich stabil; für mehr Konsistenz eine Figur einmal mit Z-Image erzeugen,
+als Referenz ablegen (`style.characterRef`) und genauso per `visual.character` einsetzen.
 
 ## Modelle & Auflösungen
 
@@ -48,7 +82,8 @@ Bei vielen Clips im Hintergrund starten (`run_in_background`).
 |-------|----------|-----------|---------|
 | Standbild 16:9 | Z-Image Turbo | 1344×768 | 8 Steps; kein Text im Bild anfordern |
 | Standbild 9:16 | Z-Image Turbo | 768×1344 | |
-| Clip | LTX-2.3 i2v | 1280×720, 5 s, 25 fps | aus dem Szenenbild → konsistenter Look |
+| Figur aus Foto / Figurentausch | Qwen Image 2.1 Turbo Edit | 1344×768 | `tools/character.py`, `visual.character` |
+| Clip | LTX-2.3 i2v | 1280×720, Szene + 3 s (max. 10 s), 25 fps | aus dem Szenenbild → konsistenter Look; letzte ~2 s abgeblendet |
 | Clip ohne Bild | LTX-2.3 t2v | 1280×720 | Slot-Namen weichen ab! |
 | Sprache | ChatterBox Multilingual | – | siehe Skill `voiceover` |
 | Musik | ACE-Step 1.5 XL Turbo | – | `[instrumental]`, Lautstärke im Mix 0.10–0.18 |
@@ -62,6 +97,9 @@ Ausgaben des Compositors werden auf Zielauflösung skaliert (Bilder `cover`).
 - **LTX-2.3**: Beschreibe *Bewegung über Zeit* in 1–3 Sätzen, eine Kamerabewegung.
   `prompt_enhance` an, wenn der Prompt kurz ist. LTX erzeugt auch Ton –
   im Compositor stumm schalten, wenn Sprache drüberliegt.
+- **Qwen Image 2.1 Edit**: Anweisung im Imperativ („Replace … with …“, „Turn this person into …“),
+  Bilder als `<image1>`/`<image2>`. Was bleiben soll, pauschal benennen („keep everything else
+  unchanged“), was sich ändern soll, konkret – inkl. Mimik und Kleidung.
 
 ## Fehlerbehebung
 

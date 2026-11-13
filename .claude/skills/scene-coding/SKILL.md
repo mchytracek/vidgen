@@ -22,6 +22,8 @@ Fehlen sie → `vidgen-setup`.
   keine Dauer-Wackelanimationen. Palette/Schrift aus `storyboard.style`.
 - LTX-Clips stumm einbinden (Sprache liegt drüber); Musik 0.10–0.18 Lautstärke,
   am Ende 1 s ausblenden.
+- LTX-Clips nur vom Anfang her nutzen: Die letzten ~2 s sind abgeblendet. `visual.props.playbackRate`
+  (setzt `comfy_assets.py`) an `OffthreadVideo` weitergeben – auch in eigenen Clip-Komponenten.
 
 ## Remotion (Default) – `video/remotion/`
 
