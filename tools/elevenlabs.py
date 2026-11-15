@@ -53,7 +53,8 @@ def has_key() -> bool:
 
 
 def request(method: str, path: str, *, query: dict | None = None, body: dict | None = None,
-            raw: bool = False, timeout: int = 180):
+            raw: bool = False, timeout: int = 180, soft: bool = False):
+    """API-Aufruf; bei soft=True liefert ein HTTP-Fehler None statt abzubrechen."""
     url = f"{API}{path}"
     if query:
         url += "?" + urllib.parse.urlencode({k: v for k, v in query.items() if v not in (None, "")}, doseq=True)
@@ -67,6 +68,12 @@ def request(method: str, path: str, *, query: dict | None = None, body: dict | N
             return (payload, dict(r.headers)) if raw else json.loads(payload or b"{}")
     except urllib.error.HTTPError as e:
         detail = e.read().decode(errors="replace")[:600]
+        if soft:
+            return None
+        if "missing_permissions" in detail:
+            die(f"ElevenLabs {method} {path}: dem API-Key fehlt eine Berechtigung – im ElevenLabs-Konto unter "
+                f"Developers → API Keys ergänzen (nötig: Text to Speech, Voices lesen/schreiben; optional User lesen)."
+                f"\n{detail}")
         hint = {401: " (API-Key falsch?)", 402: " (Kontingent/Abo reicht nicht)",
                 429: " (Rate-Limit – später erneut)"}.get(e.code, "")
         die(f"ElevenLabs {method} {path}: HTTP {e.code}{hint}\n{detail}")
@@ -94,7 +101,10 @@ def synthesize(text: str, voice_id: str, dst: Path, *, model: str = DEFAULT_MODE
 
 
 def quota() -> tuple[int, int] | None:
-    sub = request("GET", "/v1/user/subscription")
+    """(verbraucht, Limit) – None, wenn der Key keine user_read-Berechtigung hat."""
+    sub = request("GET", "/v1/user/subscription", soft=True)
+    if not sub:
+        return None
     try:
         return int(sub["character_count"]), int(sub["character_limit"])
     except (KeyError, TypeError, ValueError):
@@ -175,7 +185,8 @@ def cmd_use(a) -> None:
 def cmd_quota(a) -> None:
     q = quota()
     if not q:
-        die("Kontingent nicht lesbar")
+        die("Kontingent nicht lesbar – dem API-Key fehlt die Berechtigung „User: Lesen“ (user_read). "
+            "Verbrauch dann im ElevenLabs-Konto ansehen.")
     used, limit = q
     print(f"Credits: {used} von {limit} verbraucht, {limit - used} frei")
     try:
