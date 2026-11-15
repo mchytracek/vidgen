@@ -1,6 +1,6 @@
 ---
 name: voiceover
-description: Vertont die Sprechtexte eines Storyboards lokal (ChatterBox Multilingual in ComfyUI, Fallback macOS say), misst die Dauern und schreibt das Timing ins storyboard.json. Verwenden in Phase 4 des Explainer-Workflows, bei neuen Sprechtexten, Stimmwechsel oder Aussprache-Problemen.
+description: Vertont die Sprechtexte eines Storyboards – lokal (ChatterBox Multilingual in ComfyUI, Fallback macOS say) oder auf Wunsch mit ElevenLabs (Cloud, große Auswahl deutscher Stimmen), misst die Dauern und schreibt das Timing ins storyboard.json. Verwenden in Phase 4 des Explainer-Workflows, bei neuen Sprechtexten, Stimmwechsel oder Aussprache-Problemen.
 ---
 
 # Voiceover
@@ -17,6 +17,7 @@ python3 tools/storyboard.py timing         # Dauern messen & eintragen
 | Backend | Qualität | Voraussetzung |
 |---------|----------|---------------|
 | `comfyui-chatterbox` | gut, Voice-Cloning, 23 Sprachen inkl. Deutsch | Custom Node *ComfyUI_Fill-ChatterBox* + Referenzstimme |
+| `elevenlabs` | sehr gut, große Auswahl deutscher Stimmen | **Cloud, kostet Credits**, API-Key; nur mit `--allow-cloud` |
 | `say` | Entwurf / Timing-Test | macOS, Stimme z. B. `Anna` (de) |
 
 **Standardstimme: Martin** – in `templates/project/storyboard.json` als
@@ -31,6 +32,43 @@ Fehlt sie auf einem Rechner, den User bitten, sie dort abzulegen – nicht auf `
 (10–20 s, sauber, ohne Musik, gleiche Sprache). `tools/tts.py` lädt sie per
 `comfy upload` in ComfyUIs `input/`. Nur Stimmen verwenden, für die der User
 die Rechte hat (eigene Stimme oder lizenziert).
+
+## ElevenLabs (Cloud, nur auf Wunsch des Users)
+
+Mehr und natürlichere deutsche Stimmen. **Sprechtexte verlassen den Rechner und kosten
+Credits** – nur verwenden, wenn der User es ausdrücklich will (CLAUDE.md Regel 3).
+
+1. API-Key liegt in `~/.config/vidgen/elevenlabs.env` (`ELEVENLABS_API_KEY=…`, chmod 600)
+   oder in der Umgebung – **nie ins Repo, nie im Chat wiederholen**. Fehlt er: User bitten, ihn
+   selbst dort einzutragen.
+2. Stimme suchen und **Hörproben** laden (kostenlos):
+   `python3 tools/elevenlabs.py voices --gender male --use-case informative_educational --previews`
+   → `video/review/stimmen/NN_<name>.mp3`. Dem User 3–5 passende Kandidaten nennen
+   (Alter, Akzent – für Deutsch „standard“/„german“ bevorzugen, Einsatzzweck) und wählen lassen.
+   Aufpreis-Stimmen (`Aufpreis ×…`) nur mit Hinweis.
+3. Übernehmen: `python3 tools/elevenlabs.py add <public_owner_id> <voice_id> --name "…"`, dann
+   `python3 tools/elevenlabs.py use <voice_id>` (setzt `voice.backend = elevenlabs`,
+   `voice.elevenlabs.{voiceId, model, settings}`). Eigene/geklonte Stimmen: `elevenlabs.py mine`.
+4. Kosten zeigen: `python3 tools/tts.py` (ohne Flag) nennt Zeichen und freie Credits und bricht ab.
+   **Erst nach Zustimmung** `python3 tools/tts.py --allow-cloud`. Erst eine Szene
+   (`--only s01 --allow-cloud`) anhören lassen, dann den Rest.
+
+Pro Szene ein Aufruf; die Nachbarszenen gehen als `previous_text`/`next_text` mit (natürliche
+Übergänge). Prüfung wie bei ChatterBox (Whisper, Sprechtempo), bis zu 3 Takes – jeder kostet.
+`voice.lexicon` gilt auch hier; `seed` macht Takes reproduzierbar (best effort).
+
+| Einstellung (`voice.elevenlabs.settings`) | Wirkung |
+|---|---|
+| `stability` 0.3–0.8 | höher = gleichmäßiger, sachlicher; niedriger = lebendiger, schwankender |
+| `similarity_boost` 0.75 | Nähe zur Originalstimme |
+| `style` 0–0.4 | Ausdruck/Betonung (0 = neutral, stabiler) |
+| `speed` 0.9–1.1 | Sprechtempo (Ziel ≈ 2,3 Wörter/s) |
+
+Modell (`voice.elevenlabs.model`): `eleven_multilingual_v2` (Default, am stabilsten bei langen
+Texten), `eleven_v3`/`eleven_v4` (ausdrucksstärker), `eleven_flash_v2_5` (halber Preis).
+Pro Szene: `scene.voice.elevenlabs.settings` (z. B. ruhigerer Schlusssatz: `{"stability": 0.75}`).
+Rechte: Stimmen aus der Bibliothek sind für kommerzielle Nutzung im Rahmen des ElevenLabs-Abos
+lizenziert – bei Kundenprojekten Abo-Stufe prüfen.
 
 ## Timing-Regeln
 

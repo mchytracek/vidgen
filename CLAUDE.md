@@ -48,7 +48,8 @@ Story und Storyboard abgenickt haben. Ausnahme: Er sagt ausdrücklich „mach du
 2. **Ton zuerst, dann Bild.** Szenendauern ergeben sich aus der Sprachaufnahme
    (+ Atempause), nicht umgekehrt.
 3. **Lokal-first.** Eigene Rechner (lokal oder im LAN/VPN) ja; keine Cloud-/Partner-Modelle (`partner_generate`,
-   `confirm_spend=true`) ohne ausdrückliche Zustimmung des Users.
+   `confirm_spend=true`) ohne ausdrückliche Zustimmung des Users. Das gilt auch für die
+   Stimme über ElevenLabs (`tts.py --allow-cloud`): erst Kosten nennen, dann Zustimmung.
 4. **ComfyUI nur über `comfy-mcp` oder `tools/comfy_assets.py`** – beide nutzen
    dieselbe Engine (`comfy-cli`). Workflows liegen in `comfy/workflows/`,
    ihre Slot-Adressen in `comfy/workflows/README.md`.
@@ -78,4 +79,6 @@ Story und Storyboard abgenickt haben. Ausnahme: Er sagt ausdrücklich „mach du
 - Bild: **Z-Image Turbo**; Figur aus Foto / Figurentausch: **Qwen Image 2.1 Turbo Edit**
   (`tools/character.py`). Video: **LTX-2.3** (t2v/i2v). Stimme: **ChatterBox
   Multilingual** mit Standardstimme Martin (`~/.config/vidgen/voices/martin_ref.wav`, nicht im Repo) (Custom Node, siehe Setup). Musik: **ACE-Step 1.5** (Modelle optional).
+- Alternative Stimme (Cloud, auf Wunsch): **ElevenLabs** (`tools/elevenlabs.py`, Key in
+  `~/.config/vidgen/elevenlabs.env`), Skill `voiceover`.
 - Fallback-Stimme ohne ComfyUI: macOS `say` (nur für Entwürfe).

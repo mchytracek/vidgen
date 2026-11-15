@@ -127,6 +127,51 @@ Grenzen:
 - Modelle und Custom Nodes werden auf dem Server installiert; `download_model` /
   `install_node` aus Claude wirken auf den Mac.
 
+## Erzählstimme mit ElevenLabs (optional, Cloud)
+
+Standard ist die lokale Stimme (ChatterBox mit Martin). Wer mehr Auswahl an deutschen
+Stimmen möchte, kann [ElevenLabs](https://elevenlabs.io) nutzen. **Achtung:** Die Sprechtexte
+werden dabei an ElevenLabs übertragen und verbrauchen Credits (≈ 1 Credit pro Zeichen bei
+Multilingual v2; ein 60-s-Video hat rund 1.000 Zeichen).
+
+**1. API-Key hinterlegen** (einmal pro Rechner, nie ins Repo) – Key im ElevenLabs-Konto unter
+*Developers → API Keys* anlegen:
+
+```bash
+mkdir -p ~/.config/vidgen && echo 'ELEVENLABS_API_KEY=sk_…' > ~/.config/vidgen/elevenlabs.env && chmod 600 ~/.config/vidgen/elevenlabs.env
+```
+
+**2. Stimme aussuchen** – deutsche Stimmen der Stimmbibliothek, Hörproben kostenlos nach
+`video/review/stimmen/`:
+
+```bash
+python3 tools/elevenlabs.py voices --gender female --use-case informative_educational --previews
+```
+
+**3. Übernehmen** (Bibliotheksstimme ins eigene Konto, dann ins Storyboard):
+
+```bash
+python3 tools/elevenlabs.py add <public_owner_id> <voice_id> --name "Erzählerin Lena"
+```
+
+```bash
+python3 tools/elevenlabs.py use <voice_id>
+```
+
+**4. Vertonen** – ohne Flag zeigt `tts.py` nur Zeichenzahl und freie Credits:
+
+```bash
+python3 tools/tts.py --allow-cloud
+```
+
+Oder einfach Claude sagen: *„Nimm für die Erzählstimme ElevenLabs, eine ruhige weibliche
+Stimme.“* – Claude sucht Kandidaten, legt dir Hörproben hin, nennt die Kosten und vertont erst
+nach deinem OK. Feinjustierung über `voice.elevenlabs.settings` (`stability`, `style`, `speed`)
+und `voice.elevenlabs.model` (`eleven_multilingual_v2` Standard, `eleven_v3`/`eleven_v4`
+ausdrucksstärker), Details im Skill `voiceover`. Aussprache-Lexikon, Whisper-Prüfung und
+Timing funktionieren wie bei der lokalen Stimme. `python3 tools/elevenlabs.py quota` zeigt
+den Verbrauch.
+
 ## Produktvideo mit eigenen Screenshots
 
 Soll ein Video einen echten Ablauf im Produkt zeigen (z. B. „In 5 Schritten zur
@@ -338,6 +383,7 @@ kostenpflichtig, siehe [Lizenzen beachten](#lizenzen-beachten).
 | `comfy-cli` + `comfy-mcp` | Steuerung von ComfyUI durch Claude (MCP) und Skripte |
 | Modelle: Z-Image Turbo, LTX-2.3 | Bilder, Clips (✅ vorhanden) |
 | Custom Node *ComfyUI_Fill-ChatterBox* | deutsche Stimme mit Voice-Cloning (optional; Fallback macOS `say`) |
+| ElevenLabs-Konto + API-Key | alternative Erzählstimme aus der Cloud (optional, kostenpflichtig) |
 | ACE-Step 1.5 Modelle | Hintergrundmusik (optional) |
 | Node ≥ 22, FFmpeg | Remotion/Hyperframes-Render, Review |
 
@@ -351,7 +397,7 @@ comfy/workflows/          geprüfte ComfyUI-Workflows + Slot-Referenz (README.md
 schemas/                  storyboard.schema.json – Datenvertrag aller Phasen
 templates/project/        Vorlage für video/ inkl. Remotion-Gerüst (rendert direkt aus storyboard.json)
 templates/claude-settings.json  empfohlene Permissions (→ .claude/settings.json kopieren)
-tools/                    Python-Helfer (nur Stdlib): init_video, storyboard, comfy_assets, character, tts, review, screens
+tools/                    Python-Helfer (nur Stdlib): init_video, storyboard, comfy_assets, character, tts, elevenlabs, review, screens
 scripts/                  init.sh, update-template.sh, setup.sh, doctor.sh, comfy-mcp.sh (MCP-Start mit ComfyUI-Adresse)
 video/                    entsteht erst durch init.sh – das Video dieses Klons
 voices/                   Referenzstimmen für Voice-Cloning (nur mit Rechten!, git-ignoriert);
@@ -409,3 +455,5 @@ Compositing übernimmt hier Claude + Code-Renderer.
 - **Tesseract**: proprietäre Nutzungsbedingungen von Mirage.
 - Modelle (Z-Image, LTX-2.3, ChatterBox, ACE-Step) haben eigene Lizenzen – vor kommerzieller Nutzung prüfen.
 - Voice-Cloning nur mit Stimmen, für die eine Einwilligung vorliegt.
+- **ElevenLabs** (optional): Cloud-Dienst, eigene Nutzungsbedingungen; kommerzielle Nutzung der
+  Stimmen hängt von der Abo-Stufe ab. Sprechtexte werden an ElevenLabs übertragen.

@@ -33,6 +33,7 @@ Kläre in **einer** Rückfrage-Runde (AskUserQuestion, max. 4 Fragen), was fehlt
 Zielgruppe & Vorwissen · Kernbotschaft / gewünschte Handlung danach ·
 Länge (Default 60–90 s) · Format (16:9 / 9:16) · Sprache & Tonalität ·
 visueller Stil (z. B. flache Vektor-Illustration, Isometrie, Fotorealismus, Whiteboard) ·
+Stimme (Default Martin lokal; auf Wunsch ElevenLabs – Cloud, kostet Credits, Skill `voiceover`) ·
 Pflichtinhalte/Quellen · Branding (Farben, Logo, Schrift).
 Was der User schon gesagt hat, nicht erneut fragen. Sinnvolle Defaults setzen
 und im Brief als „Annahme“ markieren. → **Gate:** Brief kurz zusammenfassen, bestätigen lassen.

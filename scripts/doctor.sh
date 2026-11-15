@@ -27,6 +27,10 @@ if [ -n "$VOICE_REF" ]; then
   else warn "Standardstimme $(basename "$VOICE_REF") fehlt → nach $VOICE_HOME/ kopieren (nicht im Repo)"; fi
 fi
 
+if [ -n "${ELEVENLABS_API_KEY:-}" ] || [ -f "${VIDGEN_CONFIG:-$HOME/.config/vidgen}/elevenlabs.env" ]; then
+  ok "ElevenLabs-API-Key hinterlegt (optionale Cloud-Stimme)"
+fi
+
 echo "ComfyUI"
 [ "$REMOTE" = 1 ] && ok "entfernter Server: $COMFY_URL (aus .vidgen.env / ~/.config/vidgen/env / \$COMFYUI_URL)"
 if stats=$(curl -s -m 3 "$COMFY_URL/system_stats"); then

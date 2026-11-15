@@ -8,6 +8,8 @@
 
 Backends:
   comfyui-chatterbox  ChatterBox Multilingual in ComfyUI (Custom Node nötig, Referenzstimme)
+  elevenlabs          ElevenLabs (Cloud, kostet Credits, API-Key) – nur mit --allow-cloud;
+                      Stimme wählen: python3 tools/elevenlabs.py voices / add / use
   say                 macOS-Sprachausgabe (Entwurf, keine Abhängigkeiten)
 """
 from __future__ import annotations
@@ -477,6 +479,88 @@ def tts_chatterbox(pdir: Path, sb: dict, s: dict, ref_name: str | None, dst_stem
     return out
 
 
+EL_TRIES = 3  # jeder Versuch kostet Credits
+
+
+def tts_elevenlabs(pdir: Path, sb: dict, s: dict, dst_stem: Path, prev_text: str | None = None,
+                   next_text: str | None = None) -> Path:
+    """Ganze Szene in einem Aufruf (ElevenLabs bleibt auch bei mehreren Sätzen stabil),
+    Nachbarszenen als Kontext für natürliche Übergänge; Prüfung wie bei ChatterBox."""
+    import elevenlabs as el
+    sb = with_scene_voice(sb, s)
+    v = sb.get("voice") or {}
+    cfg = v.get("elevenlabs") or {}
+    if not cfg.get("voiceId"):
+        die("voice.elevenlabs.voiceId fehlt – python3 tools/elevenlabs.py voices / add / use")
+    scene_cfg = (s.get("voice") or {}).get("elevenlabs") or {}
+    settings = {**(cfg.get("settings") or {}), **(scene_cfg.get("settings") or {})}
+    lexicon = v.get("lexicon")
+    text = s["narration"]
+    spoken = apply_lexicon(text, lexicon)
+    lang = (sb.get("language") or "de")[:2]
+    base_seed = int(v.get("seed", 1234))
+    words = len(text.split())
+    use_stt = ffmpeg_ok() and stt_available()
+    with tempfile.TemporaryDirectory() as td:
+        tdp = Path(td)
+        best: tuple[float, Path] | None = None
+        for t in range(EL_TRIES):
+            raw, _ = el.synthesize(spoken, cfg["voiceId"], tdp / f"{t}.mp3", model=cfg.get("model", el.DEFAULT_MODEL),
+                                   settings=settings, seed=base_seed + 1000 * t, language=lang,
+                                   previous_text=apply_lexicon(prev_text, lexicon) if prev_text else None,
+                                   next_text=apply_lexicon(next_text, lexicon) if next_text else None)
+            if not ffmpeg_ok():
+                return Path(shutil.copyfile(raw, dst_stem.with_suffix(".mp3")))
+            cut = tdp / f"{t}.wav"
+            trim_silence(raw, cut)
+            dur, gap = audio_seconds(cut), longest_gap(cut)
+            wps = words / dur if dur else 99
+            problems = []
+            if not WPS_RANGE[0] <= wps <= WPS_RANGE[1]:
+                problems.append(f"{wps:.1f} W/s")
+            if gap > 1.4:  # zwischen Sätzen sind bei ElevenLabs längere Pausen normal
+                problems.append(f"Pause {gap:.2f} s")
+            heard = ""
+            if use_stt:
+                heard = transcribe(cut, lang)
+                ok_text, probs = check_transcript(text, heard)
+                if not ok_text and spoken != text and lexicon_may_explain(probs, lexicon):
+                    ok_text = check_transcript(spoken, heard)[0]
+                if not ok_text:
+                    problems += probs
+            ok = not problems
+            print(f"    Take {t + 1}: {dur:.2f} s – {'✔' if ok else '✖ ' + '; '.join(problems)}"
+                  + (f"\n      gehört: {heard}" if heard else ""))
+            score = len(problems) * 10 + abs(wps - 2.3)
+            if best is None or score < best[0]:
+                best = (score, cut)
+            if ok:
+                break
+        else:
+            print(f"    ⚠ kein sauberer Take nach {EL_TRIES} Versuchen – bester genommen, bitte anhören")
+        out = dst_stem.with_suffix(".mp3")
+        cp = run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(best[1]), "-ar", "44100", "-b:a", "192k", str(out)])
+        if cp.returncode:
+            die(f"ffmpeg: {cp.stderr}")
+    return out
+
+
+def cloud_gate(sb: dict, scenes: list[dict], allow: bool, extra_chars: int = 0) -> None:
+    """ElevenLabs kostet Credits und überträgt die Texte: ohne --allow-cloud nur Kosten zeigen."""
+    import elevenlabs as el
+    chars = sum(len(apply_lexicon(s["narration"], (sb.get("voice") or {}).get("lexicon"))) for s in scenes) + extra_chars
+    q = el.quota() if el.has_key() else None
+    free = f", frei: {q[1] - q[0]}" if q else ""
+    print(f"ElevenLabs: {str(len(scenes)) + ' Szene(n)' if scenes else 'Hörproben'} – ≈ {chars} Zeichen pro Durchgang "
+          f"(bis ×{EL_TRIES} bei Fehlversuchen){free}")
+    if q and chars > q[1] - q[0]:
+        die("Kontingent reicht nicht – kürzen oder Credits aufstocken")
+    if not allow:
+        print("→ Sprechtexte werden an ElevenLabs übertragen und kosten Credits. Nach Zustimmung des Users "
+              "erneut mit --allow-cloud aufrufen.")
+        raise SystemExit(2)
+
+
 def try_pronunciation(pdir: Path, sb: dict, backend: str, ref_name: str | None, spec: str,
                       sentence: str | None) -> None:
     """Hörproben: denselben Satz mit verschiedenen Lexikon-Schreibweisen eines Worts vertonen.
@@ -512,6 +596,8 @@ def try_pronunciation(pdir: Path, sb: dict, backend: str, ref_name: str | None, 
         print(f"{n}: {var}" + (" (ohne Lexikon)" if var == word else ""))
         if backend == "say":
             out = tts_say(apply_lexicon(sentence, lex), (tsb.get("voice") or {}).get("sayVoice", "Anna"), stem)
+        elif backend == "elevenlabs":
+            out = tts_elevenlabs(pdir, tsb, {"id": f"try{n}", "narration": sentence}, stem)
         else:
             out = tts_chatterbox(pdir, tsb, {"id": f"try{n}", "narration": sentence}, ref_name, stem)
         wav = out_dir / f"_{n}.wav"
@@ -530,7 +616,9 @@ def try_pronunciation(pdir: Path, sb: dict, backend: str, ref_name: str | None, 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--dir", dest="project", help="Videoordner (Default: video/)")
-    ap.add_argument("--backend", choices=["comfyui-chatterbox", "say"])
+    ap.add_argument("--backend", choices=["comfyui-chatterbox", "elevenlabs", "say"])
+    ap.add_argument("--allow-cloud", action="store_true",
+                    help="ElevenLabs wirklich aufrufen (überträgt Texte, kostet Credits) – sonst nur Kostenanzeige")
     ap.add_argument("--only")
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--try", dest="try_spec", metavar="WORT=V1,V2",
@@ -561,8 +649,17 @@ def main():
             print("Hinweis: keine voice.reference – ChatterBox nutzt seine eingebaute Stimme.")
 
     if a.try_spec:
+        if backend == "elevenlabs":
+            n = len([x for x in a.try_spec.split("=", 1)[-1].split(",") if x.strip()]) + 1
+            cloud_gate(sb, [], a.allow_cloud, extra_chars=n * len(a.sentence or "x" * 120))
         try_pronunciation(pdir, sb, backend, ref_name, a.try_spec, a.sentence)
         return
+
+    todo = [s for s in select_scenes(sb, a.only)
+            if a.force or not ((s.get("assets") or {}).get("audio") and (pdir / "assets" / s["assets"]["audio"]).exists())]
+    if backend == "elevenlabs" and todo:
+        cloud_gate(sb, todo, a.allow_cloud)
+    order = [x["id"] for x in sb["scenes"]]
 
     for s in select_scenes(sb, a.only):
         cur = (s.get("assets") or {}).get("audio")
@@ -572,6 +669,11 @@ def main():
         print(f"{s['id']}: {backend} – {s['narration'][:60]}…")
         if backend == "say":
             out = tts_say(s["narration"], voice.get("sayVoice", "Anna"), stem)
+        elif backend == "elevenlabs":
+            i = order.index(s["id"])
+            prev_t = sb["scenes"][i - 1]["narration"] if i > 0 else None
+            next_t = sb["scenes"][i + 1]["narration"] if i + 1 < len(order) else None
+            out = tts_elevenlabs(pdir, sb, s, stem, prev_t, next_t)
         else:
             out = tts_chatterbox(pdir, sb, s, ref_name, stem)
         rel = f"audio/{out.name}"
