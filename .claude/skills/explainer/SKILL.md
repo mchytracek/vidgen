@@ -87,7 +87,9 @@ Kontaktbogen + Stichproben ansehen, Probleme selbst beheben, dann dem User zeige
 ## 8. Final-Render
 
 Render nach `video/renders/final.mp4`, Status `done` setzen und dem
-User Pfad, Laufzeit und eine Liste offener Punkte nennen.
+User Pfad, Laufzeit und eine Liste offener Punkte nennen. Stammt Audio aus dem kostenlosen
+ElevenLabs-Tarif (`audioSource: "elevenlabs:free"`), das als offenen Punkt **an erster Stelle**
+nennen: Video nicht kommerziell nutzbar, vor Veröffentlichung im Bezahl-Abo neu vertonen.
 
 ## Arbeitsweise
 

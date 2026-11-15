@@ -17,6 +17,7 @@
     "language": "German (de)",
     "seed": 2025,
     "params": { "temperature": 0.55 },
+    "elevenlabs": { "voiceId": "TUKJhQmz3RPYBNAgC5A1", "name": "German Narration", "model": "eleven_multilingual_v2", "settings": { "stability": 0.5, "similarity_boost": 0.75, "style": 0.0, "use_speaker_boost": true } },
     "lexicon": { "DNS": "Deh-Enn-Ess", "IP": "Ih-Peh", "IP-Adresse": "Ih-Peh-Adresse", "IP-Adressen": "Ih-Peh-Adressen", "Punkt de": "Punkt, Deh-Eh", "Nameserver": "Neim-Server" }
   },
   "music": { "enabled": false, "tags": "calm corporate ambient, soft piano, warm pads, instrumental", "bpm": 90, "volume": 0.14, "file": null },

@@ -31,7 +31,11 @@ Alle Bilder mit `Read` ansehen. Alternativ MCP `preview_media` für einzelne Cli
    Element, Zoom zeigt keinen leeren Rand, UI-Text im Zoom scharf, keine echten
    Kundendaten/Namen/E-Mails sichtbar, genannte Beschriftung = sichtbare Beschriftung.
    Detailprüfung: `python3 tools/screens.py stills`.
-6. **Ton:** Lautheit Ziel −16 LUFS (Web) – `report.md` nennt den Messwert;
+6. **Lizenz Stimme:** Szenen mit `audioSource: "elevenlabs:free"` (kostenloser ElevenLabs-Tarif)
+   dürfen nicht kommerziell genutzt werden – auch Firmen-/Projektvideos auf Social Media oder in
+   Präsentationen nicht. Dem User deutlich melden; vor Veröffentlichung im Bezahl-Abo neu
+   vertonen (`tts.py --force --allow-cloud`).
+7. **Ton:** Lautheit Ziel −16 LUFS (Web) – `report.md` nennt den Messwert;
    `tools/review.py --normalize` erzeugt `renders/final_norm.mp4`.
 
 ## Danach

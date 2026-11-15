@@ -100,9 +100,32 @@ def synthesize(text: str, voice_id: str, dst: Path, *, model: str = DEFAULT_MODE
     return dst, headers.get("request-id") or headers.get("Request-Id")
 
 
+FREE_TIERS = {"free"}
+FREE_WARNING = (
+    "⚠ ElevenLabs-Konto im kostenlosen Tarif: Diese Aufnahmen haben KEINE kommerzielle Lizenz – auch nicht\n"
+    "  nach einem späteren Upgrade (es zählt der Zeitpunkt der Erzeugung). Zeigen nur nicht-kommerziell\n"
+    "  und mit „elevenlabs.io“ im Titel. Für Firmen-/Projektvideos (Social Media, Präsentationen, Website)\n"
+    "  vorher ein Bezahl-Abo (ab Starter) abschließen und dann neu vertonen (--force).")
+
+_SUB: dict | None = None
+
+
+def subscription() -> dict | None:
+    """Abo-Daten (einmal pro Prozess) – None ohne user_read-Berechtigung."""
+    global _SUB
+    if _SUB is None:
+        _SUB = request("GET", "/v1/user/subscription", soft=True) or {}
+    return _SUB or None
+
+
+def tier() -> str | None:
+    sub = subscription()
+    return (sub or {}).get("tier")
+
+
 def quota() -> tuple[int, int] | None:
     """(verbraucht, Limit) – None, wenn der Key keine user_read-Berechtigung hat."""
-    sub = request("GET", "/v1/user/subscription", soft=True)
+    sub = subscription()
     if not sub:
         return None
     try:
@@ -188,7 +211,9 @@ def cmd_quota(a) -> None:
         die("Kontingent nicht lesbar – dem API-Key fehlt die Berechtigung „User: Lesen“ (user_read). "
             "Verbrauch dann im ElevenLabs-Konto ansehen.")
     used, limit = q
-    print(f"Credits: {used} von {limit} verbraucht, {limit - used} frei")
+    print(f"Tarif: {tier()}  ·  Credits: {used} von {limit} verbraucht, {limit - used} frei")
+    if tier() in FREE_TIERS:
+        print(FREE_WARNING)
     try:
         sb = load_sb(project_dir(a.project))
         chars = sum(len(s["narration"]) for s in sb["scenes"])

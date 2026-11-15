@@ -550,11 +550,15 @@ def cloud_gate(sb: dict, scenes: list[dict], allow: bool, extra_chars: int = 0) 
     import elevenlabs as el
     chars = sum(len(apply_lexicon(s["narration"], (sb.get("voice") or {}).get("lexicon"))) for s in scenes) + extra_chars
     q = el.quota() if el.has_key() else None
-    free = f", frei: {q[1] - q[0]}" if q else ""
+    free = f", frei: {q[1] - q[0]}, Tarif: {el.tier()}" if q else ""
     print(f"ElevenLabs: {str(len(scenes)) + ' Szene(n)' if scenes else 'Hörproben'} – ≈ {chars} Zeichen pro Durchgang "
           f"(bis ×{EL_TRIES} bei Fehlversuchen){free}")
     if q and chars > q[1] - q[0]:
         die("Kontingent reicht nicht – kürzen oder Credits aufstocken")
+    if el.has_key() and el.tier() in el.FREE_TIERS:
+        print(el.FREE_WARNING)
+    elif el.has_key() and not q:
+        print("  (Tarif unbekannt – dem API-Key fehlt „User: Lesen“; kommerzielle Lizenz selbst prüfen)")
     if not allow:
         print("→ Sprechtexte werden an ElevenLabs übertragen und kosten Credits. Nach Zustimmung des Users "
               "erneut mit --allow-cloud aufrufen.")
@@ -678,10 +682,23 @@ def main():
             out = tts_chatterbox(pdir, sb, s, ref_name, stem)
         rel = f"audio/{out.name}"
         s.setdefault("assets", {})["audio"] = rel
+        # Herkunft der Aufnahme: bei ElevenLabs der Tarif zum Zeitpunkt der Erzeugung (Lizenzfrage)
+        if backend == "elevenlabs":
+            import elevenlabs as el
+            src = f"elevenlabs:{el.tier() or 'unbekannt'}"
+        else:
+            src = backend
+
+        def mark(sc, rel=rel, src=src):
+            sc.setdefault("assets", {})["audio"] = rel
+            sc["audioSource"] = src
         # frisch laden statt die Start-Kopie zurückzuschreiben (parallele Storyboard-Änderungen bleiben erhalten)
-        patch_scene(pdir, s["id"], lambda sc, rel=rel: sc.setdefault("assets", {}).__setitem__("audio", rel))
+        patch_scene(pdir, s["id"], mark)
 
     subprocess.run(["python3", str(Path(__file__).with_name("storyboard.py")), "timing", "--dir", str(pdir)], check=False)
+    free = [x["id"] for x in load_sb(pdir)["scenes"] if x.get("audioSource") == "elevenlabs:free"]
+    if free:
+        print(f"⚠ Audio aus dem kostenlosen ElevenLabs-Tarif (nicht kommerziell nutzbar): {', '.join(free)}")
 
 
 if __name__ == "__main__":

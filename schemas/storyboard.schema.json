@@ -134,6 +134,7 @@
             "properties": { "seed": { "type": "integer" }, "params": { "type": "object" }, "elevenlabs": { "type": "object" } }
           },
           "minDuration": { "type": "number" },
+          "audioSource": { "type": "string", "description": "(auto) Herkunft der Aufnahme: comfyui-chatterbox | say | elevenlabs:<tarif> – elevenlabs:free = nicht kommerziell nutzbar" },
           "audioDuration": { "type": "number", "description": "(auto)" },
           "duration": { "type": "number", "description": "(auto) Sekunden" },
           "assets": {

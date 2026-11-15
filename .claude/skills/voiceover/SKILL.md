@@ -35,7 +35,10 @@ die Rechte hat (eigene Stimme oder lizenziert).
 
 ## ElevenLabs (Cloud, nur auf Wunsch des Users)
 
-Mehr und natürlichere deutsche Stimmen. **Sprechtexte verlassen den Rechner und kosten
+Mehr und natürlichere deutsche Stimmen. **Hausstimme bei ElevenLabs: „German Narration“** (männlich, mittleres Alter,
+professionell; `voiceId` `TUKJhQmz3RPYBNAgC5A1`) – in der Projektvorlage unter `voice.elevenlabs`
+vorbelegt. Umschalten auf ElevenLabs genügt dann: `voice.backend = "elevenlabs"`
+(oder `python3 tools/elevenlabs.py use TUKJhQmz3RPYBNAgC5A1`). Andere Stimme nur auf Wunsch. **Sprechtexte verlassen den Rechner und kosten
 Credits** – nur verwenden, wenn der User es ausdrücklich will (CLAUDE.md Regel 3).
 
 1. API-Key liegt in `~/.config/vidgen/elevenlabs.env` (`ELEVENLABS_API_KEY=…`, chmod 600)
@@ -52,6 +55,13 @@ Credits** – nur verwenden, wenn der User es ausdrücklich will (CLAUDE.md Rege
 4. Kosten zeigen: `python3 tools/tts.py` (ohne Flag) nennt Zeichen und freie Credits und bricht ab.
    **Erst nach Zustimmung** `python3 tools/tts.py --allow-cloud`. Erst eine Szene
    (`--only s01 --allow-cloud`) anhören lassen, dann den Rest.
+
+**Lizenz:** Der kostenlose ElevenLabs-Tarif erlaubt **keine kommerzielle Nutzung** – dazu zählen
+auch eigene Firmen-/Projektvideos (Social Media, Präsentationen, Website). Maßgeblich ist der Tarif
+**zum Zeitpunkt der Erzeugung**, ein späteres Upgrade heilt nichts. `tts.py` warnt bei Tarif `free`
+und schreibt pro Szene `audioSource` (`elevenlabs:free`, `elevenlabs:starter` …) ins Storyboard.
+Im kostenlosen Tarif nur testen; finale Vertonung erst im Bezahl-Abo. Die Warnung dem User
+immer weitergeben, nie stillschweigend übergehen.
 
 Pro Szene ein Aufruf; die Nachbarszenen gehen als `previous_text`/`next_text` mit (natürliche
 Übergänge). Prüfung wie bei ChatterBox (Whisper, Sprechtempo), bis zu 3 Takes – jeder kostet.
