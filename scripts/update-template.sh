@@ -13,6 +13,13 @@ git remote get-url template >/dev/null 2>&1 || {
 [[ -z "$(git status --porcelain --untracked-files=no)" ]] || {
   echo "Arbeitskopie hat uncommittete Änderungen – erst committen oder stashen."; exit 1; }
 
+# Schutz für ältere Klone: Pushes ins Template sperren (nur Holen ist erlaubt)
+if [[ "$(git remote get-url --push template)" == "$(git remote get-url template)" ]]; then
+  git remote set-url --push template "KEIN_PUSH_INS_TEMPLATE__eigenes_Remote_anlegen__git_remote_add_origin_URL"
+  current=$(git rev-parse --abbrev-ref HEAD)
+  [[ "$(git config "branch.$current.remote" || true)" == template ]] && git branch --unset-upstream || true
+  echo "  ✔ Pushes ins Template gesperrt (eigenes Remote: git remote add origin <url> && git push -u origin HEAD)"
+fi
 git fetch template "$branch"
 echo "Neu im Template:"
 git log --oneline "HEAD..template/$branch" || true

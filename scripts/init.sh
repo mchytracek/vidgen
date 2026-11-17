@@ -31,6 +31,12 @@ done
 
 step() { printf "\n\033[1m▶ %s\033[0m\n" "$*"; }
 
+lock_template_push() {
+  # Ins Template wird nie gepusht: Upstream lösen und Push-URL sperren (Holen bleibt möglich)
+  git branch --unset-upstream >/dev/null 2>&1 || true
+  git remote set-url --push template "KEIN_PUSH_INS_TEMPLATE__eigenes_Remote_anlegen__git_remote_add_origin_URL"
+}
+
 [[ -d video ]] && { echo "✖ video/ existiert bereits – dieses Repo ist schon initialisiert"; exit 1; }
 
 step "ComfyUI-Server"
@@ -71,6 +77,7 @@ if git rev-parse --git-dir >/dev/null 2>&1; then
      && ! git remote get-url template >/dev/null 2>&1; then
     step "Git: origin → template (für spätere Template-Updates)"
     git remote rename origin template
+    lock_template_push
     echo "  Template-Updates holen:   scripts/update-template.sh"
     echo "  Eigenes Remote anlegen:   git remote add origin <url> && git push -u origin HEAD"
   fi
